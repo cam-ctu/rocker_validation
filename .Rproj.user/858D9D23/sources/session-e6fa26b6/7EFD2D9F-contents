@@ -1,0 +1,114 @@
+
+Maybe add in to install_verse.sh or install_cctu.sh
+
+tlmgr install grfext
+
+This is a latex package that the tools::testINstalledPackages("basic") wants to have, but
+doesn't want to install new latex packages.  See tinytex  https://yihui.org/tinytex/#:~:text=To%20compile%20a%20LaTeX%20document,the%20missing%20packages%20by%20default.
+
+Or maybe run in root mode and do the testing on the CLI  > R CMD make check-InstalledPackages
+
+
+
+docker buildx bake  -f bakefiles\4.3.2.docker-bake.json --set=*.output=type=docker
+works locally now. Cache-from files exist nicely.  But can't start an older version locally, only works from github.
+(coudl probably make it work by hand building each dockerfile in turn, or revised bake file to use contexts.)
+docker buildx bake  -f bakefiles\4.3.1.docker-bake.json --push
+
+gets held up by github authentication.
+
+Want to get 4.3.0, 4.3.1 onto image registries for all images..
+
+
+
+Location of images local c drive or network driver
+add .Rprofile file maybe for personalisation?  lang, theme
+import ~/.config/rstudio/rstudio-prefs.json  with edited values
+paper size is not defaulting to a4..
+
+
+validation scripts/Project
+notifications when a new R version comes out to me/
+add in the compose.yml file and document,  change from .env to secrets. ( doesn't work https://stackoverflow.com/questions/75926725/how-to-secure-credentials-for-cifs-volume-in-docker-stack-secrets)
+Maybe create the volume seperately as a named one with instructions.
+See if the logs pass on the password etc...
+
+docker compose up ;  docker compose down  - > into bat button
+presentation and UAT,  purpose, and renv use.
+fix github wiki. edit readme  etc,  to clarify and acknowledge
+limiations to amd64 processor
+docker login -u shug0131 -p CatDogBassoon1
+could add in automatic Installation Test outputs from here - but want it to be really done locally not on github
+Maybe modify core.yml only to publish latest version on a manual workflow_dispatch. Edited it to get 4.3.0/4.3.1 set up , rocker only does this on a
+new release I think.
+
+
+had to chnage permissions for my script install_cctu.sh https://aileenrae.co.uk/blog/github-actions-shell-script-permission-denied-error/
+git update-index --chmod=+x scripts/install_cctu.sh
+git commit -am "change permissions"
+
+
+Can't use git push directly on teh command line, but works ok in github desktop...
+
+
+ "C:\Program Files\Docker\Docker\Docker Desktop.exe"  to launch teh docker daemon from CLI
+
+
+
+# Local miniCRAN package of approved packages, use as default location to find packages. So have a date specific snapshot. Archiving.
+#  Or use MRAN which is date stamped,  and then restrict which packages to make available.  -Moved to Posit RSPM  (rstduio package manager)
+
+
+the workflows have dockerfiles.yml run daily which updates the stack, json, docker. They work by running the r scripts in the build directory (one directly and then via the ./makefile).
+It checks what are the latest versions, and dates etc for R, Rstudio, CRAN, CTAN https://github.com/rocker-org/rocker-versioned2/wiki/Versions.  Creates a pull request if something changes( I think)
+which then might build an image.  Also daily workflow to revuild latest/development versions
+
+The stacks/devel.json is the basic template. Edit to add on a new layer, or remove extraneous. Also edit make-stacks.
+
+Have edited build_R_source.sh  to keep the testing
+
+
+
+
+# trial project startup automation
+# riskassessment tools to check adding packages.  Set of processes to follow for use locally -> adding to miniCRAN, what to document when.
+* shift to writing a DESCRIPTION file with the package dependencies in a trial-project.  Line to read and load package in config.
+* checking for pre-existing installed packages and give warnings
+
+
+
+Want an R/github project to create the image
+http://haines-lab.com/post/2022-01-23-automating-computational-reproducibility-with-r-using-renv-docker-and-github-actions/
+https://eliocamp.github.io/codigo-r/en/2021/08/docker-renv/
+
+
+Create a script to automate project startup.  renv::init(), create folders, file templates, QC, DESCRIPTION for extra pacakges.
+Give pointers back to how the docker image is created.
+
+
+# USage notes
+For profile just had to install xlsx, tab, package.  everythign else was alread in site library.
+
+Can't use \\ slashes, must use /
+absolute file paths  V:/ -> /home/rstudio/
+
+renv (for older projects) is set up to override the
+options("repos") which is set to a specific date for cctu:not-the-latest (in R.Home/R.Profile.site)
+renv::deactivate(clean=TRUE); renv::init(bare=TRUE) fixes this.
+and starting from fresh it should not be a problem
+but on an old project this did do a scanning exercise and double-installed lots of package that were alreayd in teh site library.
+(so add the bare=TRUE)
+
+
+## Backslash solution
+On windows, I think the best thing to do to improve your workflow with windows specific paths in R is to use e.g. AutoHotkey which allows for custom hotkeys:
+
+define a Hotkey, e.g. Cntr-Shift-V
+assigns it an procedure that replaces backslashes within your Clipboard with slaches ...
+when ever you want to copy paste a path into R you can use Cntr-Shift-V instead of Cntr-V
+Et-voila
+AutoHotkey Code Snippet (link to homepage)
+
+^+v::
+StringReplace, clipboard, clipboard, \, /, All
+SendInput, %clipboard%

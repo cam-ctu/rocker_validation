@@ -1,0 +1,72 @@
+---
+title: "validation"
+output: html_document
+
+---
+
+# Background
+
+R is an open source and free software environment for statistical computing and graphics.
+It can be readily downloaded from <http://cran.ma.imperial.ac.uk/> or other mirror sites.
+A position paper on its ability to meet FDA and EME regulatory requirements for Clinical Trials  is provided in the R-FDA.pdf appendix and the R-SDLC.pdf gives an overview of the development cycle.
+Internal tools are provided to check that an installation is successful. These function by running pre-written scripts to a) check that they run without errors b) the output that is produced matches up to pre-saved output files supplied with the download.
+
+<https://cran.ma.imperial.ac.uk/doc/manuals/r-release/R-admin.html#Testing-a-Unix_002dalike-Installation>
+
+
+
+
+```{r config }
+knitr::opts_chunk$set(echo = TRUE, warning=TRUE, results = TRUE, error = TRUE, message=TRUE)
+base_dir <- file.path(R.home(), "tests","base_tests")
+recommended_dir <- file.path(R.home(), "tests","recommended_tests")
+#unlink("home_tests",recursive = TRUE, force = TRUE)
+unlink(base_dir,recursive = TRUE)
+unlink(recommended_dir,recursive = TRUE)
+#dir.create("home_tests")
+dir.create(base_dir)
+dir.create(recommended_dir)
+```
+
+Running the installation tests as per the manual
+
+```{r tests}
+Sys.setenv(LC_COLLATE = "C", LC_TIME="C", LANGUAGE = "en")
+success_basic <- tools::testInstalledBasic("both")
+success_internet <- tools::testInstalledBasic("internet")
+success_base <- tools::testInstalledPackages(scope = "base", 
+                                             outDir =base_dir,
+                                             errorsAreFatal=FALSE)
+#tools::testInstalledPackage("tcltk")
+if(success_base){
+  tools::testInstalledPackages(scope = "base", 
+                                             outDir =base_dir,
+                                             errorsAreFatal=TRUE)
+}
+
+success_recommended <- tools::testInstalledPackages(scope = "recommended", 
+                                                    outDir =recommended_dir, 
+                                                    errorsAreFatal = FALSE)
+if(success_base){
+  tools::testInstalledPackages(scope = "recommended", 
+                                             outDir =recommended_dir,
+                                             errorsAreFatal=TRUE)
+}
+
+
+
+system("rm -rf home_tests")
+test_dir <- paste0(R.home(),"/tests")
+cmd <- paste("cp -r ", test_dir, " home_tests")
+system(cmd)
+
+```
+
+The return code from the  tests,  0/1 indicates success/fail.  The outputs and comparisons from each is in the directory "home_tests"
+
+* basic_tests  -  `r success_basic`
+* basic internet tests - `r success_internet`
+* base_tests - `r success_base`
+* recommended_tests - `r success_recommended`
+
+
