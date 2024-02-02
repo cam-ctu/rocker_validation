@@ -48,6 +48,7 @@ success_recommended <- tools::testInstalledPackages(scope = "recommended",
                                                     outDir =recommended_dir, 
                                                     errorsAreFatal = FALSE)
 if(success_base){
+  #only run if have fails to see where it happens
   tools::testInstalledPackages(scope = "recommended", 
                                              outDir =recommended_dir,
                                              errorsAreFatal=TRUE)
