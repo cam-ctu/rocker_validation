@@ -1,0 +1,40 @@
+
+R version 4.3.2 (2023-10-31) -- "Eye Holes"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(parallel)
+> 
+> # use the same random numbers for all values
+> set.seed(1)
+> simplify2array(mclapply(rep(4, 5), rnorm))
+           [,1]       [,2]       [,3]        [,4]       [,5]
+[1,] -1.1596137 -0.5631068 -0.2336725 -0.20731093  1.1791801
+[2,]  1.0746447 -1.6822861 -0.2734482 -0.58424996 -0.0176717
+[3,] -0.9752129 -0.4020575 -1.0767026  0.06813205 -0.2451598
+[4,]  0.1557202  0.5603943  0.3150651  0.63948209  0.6184537
+> 
+> set.seed(1)
+> simplify2array(mclapply(rep(4, 5), rnorm, mc.preschedule = FALSE,
++                 mc.set.seed = FALSE))
+           [,1]       [,2]       [,3]       [,4]       [,5]
+[1,] -0.6264538 -0.6264538 -0.6264538 -0.6264538 -0.6264538
+[2,]  0.1836433  0.1836433  0.1836433  0.1836433  0.1836433
+[3,] -0.8356286 -0.8356286 -0.8356286 -0.8356286 -0.8356286
+[4,]  1.5952808  1.5952808  1.5952808  1.5952808  1.5952808
+> 
+> proc.time()
+   user  system elapsed 
+  0.484   0.288   0.195 

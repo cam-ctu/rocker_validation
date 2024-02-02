@@ -1,0 +1,109 @@
+
+R version 4.3.2 (2023-10-31) -- "Eye Holes"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> .ptime <- proc.time()
+> 
+> unname(extSoftVersion()["PCRE"])
+[1] "10.39 2021-10-29"
+> 
+> ### tests of recursion in PCRE matching
+> ### Based on PR16757
+> 
+> ## This is expected to throw a warning at some point if PCRE uses a stack,
+> ## depending on the system and stack size.
+> ## Typical stack 8-10M, some people use 40M.
+> 
+> ## PCRE2 >= 10.30 never uses recursion: earlier versions (including
+> ## PCRE1) can be compiled not to use a stack.
+> 
+> unname(pcre_config()["stack"])
+[1] FALSE
+> 
+> if(pcre_config()["stack"]) {
++     op <- options(warn = 1)
++     for (n in c(seq(5000L, 10000L, 1000L), 20000L, 50000L, 100000L)) {
++         print(n)
++         x <- paste0(rep("a", n), collapse="")
++         print(grepl("(a|b)+", x, perl = TRUE))
++     }
++     options(op)
++ }
+> 
+> ### tests of PCRE's JIT.
+> if(!pcre_config()["JIT"]) {
++     message("The rest of these tests are pointless without JIT support")
++     q("no")
++ }
+> 
+> ## Test from example(grep)
+> 
+> txt2 <- c("The", "licenses", "for", "most", "software", "are",
++           "designed", "to", "take", "away", "your", "freedom",
++           "to", "share", "and", "change", "it.",
++           "", "By", "contrast,", "the", "GNU", "General", "Public", "License",
++           "is", "intended", "to", "guarantee", "your", "freedom", "to",
++           "share", "and", "change", "free", "software", "--",
++           "to", "make", "sure", "the", "software", "is",
++           "free", "for", "all", "its", "users")
+> grep("[gu]", txt2, perl = TRUE)
+[1]  7 11 16 24 29 30 35 41 49
+> 
+> st <- function(expr) sum(system.time(expr)[1:2])
+> 
+> st(for(i in 1:1e4) grep("[gu]", txt2, perl = TRUE))
+[1] 0.146
+> options(PCRE_use_JIT = TRUE)
+> st(for(i in 1:1e4) grep("[gu]", txt2, perl = TRUE))
+[1] 0.095
+> 
+> 
+> ## and for more inputs
+> txt3 <- rep(txt2, 10)
+> options(PCRE_use_JIT = FALSE)
+> st(for(i in 1:1e3) grep("[gu]", txt3, perl = TRUE))
+[1] 0.039
+> options(PCRE_use_JIT = TRUE)
+> st(for(i in 1:1e3) grep("[gu]", txt3, perl = TRUE))
+[1] 0.038
+> 
+> 
+> ## An example where JIT really paid off with PCRE1 (e.g. 10x)
+> pat <- "([^[:alpha:]]|a|b)+"
+> long_string <- paste0(rep("a", 1023), collapse="")
+> N <- 10
+> options(PCRE_use_JIT = FALSE)
+> st(for(i in 1:1e3) grep(pat, rep(long_string, N), perl = TRUE))
+[1] 0.921
+> options(PCRE_use_JIT = TRUE)
+> st(for(i in 1:1e3) grep(pat, rep(long_string, N), perl = TRUE))
+[1] 0.948
+> 
+> 
+> ## This needed to test 50 strings to see much gain from study
+> txt <- rep("a test of capitalizing", 50)
+> options(PCRE_use_JIT = FALSE)
+> st(for(i in 1:1e4) gsub("(\\w)(\\w*)", "\\U\\1\\L\\2", txt, perl = TRUE))
+[1] 0.634
+> options(PCRE_use_JIT = TRUE)
+> st(for(i in 1:1e4) gsub("(\\w)(\\w*)", "\\U\\1\\L\\2", txt, perl = TRUE))
+[1] 0.664
+> 
+> if(grepl("^10", extSoftVersion()["PCRE"])) {
++     cat("Time elapsed: ", proc.time() - .ptime,"\n")
++     q()
++ }
+Time elapsed:  3.682 0 3.683 0 0 

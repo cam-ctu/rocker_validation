@@ -1,5 +1,5 @@
 
-R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+R version 4.3.2 (2023-10-31) -- "Eye Holes"
 Copyright (C) 2023 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -1638,7 +1638,7 @@ List of 6
 > ans <- matrix(0, nrow = length(names.tp), ncol = length(unames))
 > rownames(ans) <- names(names.tp)
 > colnames(ans) <- unames
-> for (i in seq(along = names.tp))
+> for (i in seq_along(names.tp))
 +     ans[i, ] <- as.numeric(unames %in% names.tp[[i]])
 > ans <- ans[, order(-colSums(ans))]
 > ans <- ans[order(rowSums(ans)), ]
@@ -1832,7 +1832,7 @@ List of 6
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  10.777 0.064 13.356 0 0 
+Time elapsed:  10.808 0.079 13.395 0 0 
 > grDevices::dev.off()
 null device 
           1 

@@ -1,0 +1,6 @@
+myTst-package	myTst-package
+foo-class	foo-class
+myTst	myTst-package
+show,foo-method	foo-class
+show,foo-method	show-methods
+show-methods	show-methods

@@ -1,0 +1,143 @@
+
+R version 4.3.2 (2023-10-31) -- "Eye Holes"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## These are tests that require libcurl functionality (available
+> ## everywhere as from R 4.2.0) and a working Internet connection.
+> 
+> ## Nowadays method = "libcurl" is the default everywhere for http[s]://
+> 
+> ## This used to check that https:// worked and skip if not, but then
+> ## all the tests redirected to https://
+> 
+> ## check basic Internet access
+> if(.Platform$OS.type == "unix" &&
++    is.null(nsl("cran.r-project.org"))) q()
+> 
+> tf <- tempfile()
+> download.file("https://cran.r-project.org/", tf)
+trying URL 'https://cran.r-project.org/'
+Content type 'text/html' length 858 bytes
+==================================================
+downloaded 858 bytes
+
+> file.size(tf)
+[1] 858
+> unlink(tf)
+> 
+> 
+> ## test url connections on http -- this now redirects to https://
+> str(readLines(zz <- url("http://cran.r-project.org/")))
+ chr [1:24] "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\" \"http://www.w3.org/TR/html4/frameset.dtd\">" ...
+> zz
+A connection with                                        
+description "http://cran.r-project.org/"
+class       "url-libcurl"               
+mode        "r"                         
+text        "text"                      
+opened      "closed"                    
+can read    "yes"                       
+can write   "no"                        
+> stopifnot(identical(summary(zz)$class, "url-libcurl"))
+> close(zz)
+> ## and check that direct https:// works
+> str(readLines(zz <- url("https://cran.r-project.org/")))
+ chr [1:24] "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\" \"http://www.w3.org/TR/html4/frameset.dtd\">" ...
+> close(zz)
+> 
+> ##  via read.table (which closes the connection) -- this now redirects to https://
+> tail(read.table(url("http://www.stats.ox.ac.uk/pub/datasets/csb/ch11b.dat")))
+     V1  V2  V3    V4 V5
+95   95 308 110 37.76  1
+96   96 308 120 37.73  1
+97   97 308 130 37.77  1
+98   98 308 140 38.01  1
+99   99 308 150 38.04  1
+100 100 308 200 38.07  1
+> 
+> ## check option works
+> options(url.method = "libcurl")
+> zz <- url("http://www.stats.ox.ac.uk/pub/datasets/csb/ch11b.dat")
+> stopifnot(identical(summary(zz)$class, "url-libcurl"))
+> close(zz)
+> 
+> curlGetHeaders("https://developer.r-project.org")
+[1] "HTTP/2 200 \r\n"                                 
+[2] "server: nginx\r\n"                               
+[3] "date: Fri, 02 Feb 2024 18:01:34 GMT\r\n"         
+[4] "content-type: text/html; charset=utf-8\r\n"      
+[5] "content-length: 15468\r\n"                       
+[6] "last-modified: Tue, 31 Oct 2023 09:35:04 GMT\r\n"
+[7] "etag: \"6540ca48-3c6c\"\r\n"                     
+[8] "accept-ranges: bytes\r\n"                        
+[9] "\r\n"                                            
+attr(,"status")
+[1] 200
+> example(curlGetHeaders, run.donttest = TRUE)
+
+crlGtH> ## No test: 
+crlGtH> ## needs Internet access, results vary
+crlGtH> curlGetHeaders("http://bugs.r-project.org")   ## this redirects to https://
+ [1] "HTTP/1.1 301 Moved Permanently\r\n"                                                                                                  
+ [2] "Server: nginx\r\n"                                                                                                                   
+ [3] "Date: Fri, 02 Feb 2024 18:01:35 GMT\r\n"                                                                                             
+ [4] "Content-Type: text/html\r\n"                                                                                                         
+ [5] "Content-Length: 162\r\n"                                                                                                             
+ [6] "Connection: close\r\n"                                                                                                               
+ [7] "Location: https://bugs.R-project.org/\r\n"                                                                                           
+ [8] "\r\n"                                                                                                                                
+ [9] "HTTP/2 200 \r\n"                                                                                                                     
+[10] "server: nginx\r\n"                                                                                                                   
+[11] "date: Fri, 02 Feb 2024 18:01:35 GMT\r\n"                                                                                             
+[12] "content-type: text/html; charset=UTF-8\r\n"                                                                                          
+[13] "content-length: 13127\r\n"                                                                                                           
+[14] "content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'\r\n"  
+[15] "set-cookie: Bugzilla_login_request_cookie=9Y07zn6lfp; domain=bugs.r-project.org; path=/; secure; HttpOnly\r\n"                       
+[16] "x-content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'\r\n"
+[17] "x-content-type-options: nosniff\r\n"                                                                                                 
+[18] "x-frame-options: SAMEORIGIN\r\n"                                                                                                     
+[19] "x-webkit-csp: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'\r\n"             
+[20] "x-xss-protection: 1; mode=block\r\n"                                                                                                 
+[21] "\r\n"                                                                                                                                
+attr(,"status")
+[1] 200
+
+crlGtH> ## 2023-04: replaces slow and unreliable https://httpbin.org/status/404
+crlGtH> curlGetHeaders("https://developer.R-project.org/inet-tests/not-found")
+[1] "HTTP/2 404 \r\n"                           
+[2] "server: nginx\r\n"                         
+[3] "date: Fri, 02 Feb 2024 18:01:36 GMT\r\n"   
+[4] "content-type: text/html; charset=utf-8\r\n"
+[5] "content-length: 146\r\n"                   
+[6] "\r\n"                                      
+attr(,"status")
+[1] 404
+
+crlGtH> ## returns status
+crlGtH> ## End(No test)
+crlGtH> 
+crlGtH> 
+> 
+> showConnections(all = TRUE)
+  description class      mode text   isopen   can read can write
+0 "stdin"     "terminal" "r"  "text" "opened" "yes"    "no"     
+1 "stdout"    "terminal" "w"  "text" "opened" "no"     "yes"    
+2 "stderr"    "terminal" "w"  "text" "opened" "no"     "yes"    
+> 
+> proc.time()
+   user  system elapsed 
+  0.825   0.344   4.650 
+> 

@@ -1,0 +1,90 @@
+
+R version 4.3.2 (2023-10-31) -- "Eye Holes"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## These are tests that require internet functionality and a working
+> ## Internet connection.
+> ## We attempt to test for those on Unix.
+> 
+> onWindows <- .Platform$OS.type == "windows"
+> 
+> if(.Platform$OS.type == "unix" &&
++    is.null(nsl("cran.r-project.org"))) q()
+> 
+> 
+> ## check graceful failure:
+> try(url("http://foo.bar", "r"))
+Error in url("http://foo.bar", "r") : 
+  cannot open the connection to 'http://foo.bar'
+In addition: Warning message:
+In url("http://foo.bar", "r") :
+  URL 'http://foo.bar/': status was 'Couldn't resolve host name'
+> 
+> if(onWindows)
++     try(url("http://foo.bar", "r", method = "wininet"))
+> 
+> ## available.packages() (not) caching in case of errors
+> tools::assertWarning(ap1 <- available.packages(repos = "http://foo.bar"))
+> tools::assertWarning(ap2 <- available.packages(repos = "http://foo.bar"))
+> stopifnot(nrow(ap1) == 0, identical(ap1, ap2))
+> ## had failed for a while in R-devel (left empty *.rds file)
+> 
+> ## download.file(.. , headers = character()) - PR#17710
+> ## https://bugs.r-project.org/show_bug.cgi?id=17710
+> ## character() should be the same as NULL, but was not for wininet
+> tf <- tempfile()
+> download.file("https://cloud.r-project.org/src/base/THANKS", destfile = tf,
++               method = if(onWindows) "wininet" else "libcurl",
++               headers = character()) -> err.code
+trying URL 'https://cloud.r-project.org/src/base/THANKS'
+Content type 'unknown' length 3914 bytes
+==================================================
+downloaded 3914 bytes
+
+> stopifnot(err.code == 0, file.size(tf) > 999) # when checked was 3914 bytes
+> ## had failed for the Windows case
+> 
+> ## ---- Checks which formerly used http://httpbin.org/404 ----
+> 
+> ## Check that a non-existent download does not leave an empty file
+> site <- "https://developer.R-project.org/inet-tests/not-found"
+> tf <- tempfile()
+> testDownloadFile404 <- tryCatch(suppressWarnings({
++     download.file(site, tf)
++ }), error = function(e) {
++     conditionMessage(e) == sprintf("cannot open URL '%s'", site)
++ })
+trying URL 'https://developer.R-project.org/inet-tests/not-found'
+> stopifnot(testDownloadFile404, !file.exists(tf))
+> 
+> test404.1 <- tryCatch({
++     open(zz <- url(site))
++ }, warning = function(w) {
++     grepl("404 Not Found", conditionMessage(w))
++ })
+> close(zz)
+> stopifnot(test404.1)
+> 
+> showConnections(all = TRUE)
+  description class      mode text   isopen   can read can write
+0 "stdin"     "terminal" "r"  "text" "opened" "yes"    "no"     
+1 "stdout"    "terminal" "w"  "text" "opened" "no"     "yes"    
+2 "stderr"    "terminal" "w"  "text" "opened" "no"     "yes"    
+> 
+> proc.time()
+   user  system elapsed 
+  0.674   0.354   2.350 
+> 

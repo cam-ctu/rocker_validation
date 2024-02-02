@@ -1,5 +1,5 @@
 
-R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+R version 4.3.2 (2023-10-31) -- "Eye Holes"
 Copyright (C) 2023 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -30,12 +30,12 @@ Type 'q()' to quit R.
 > 
 > system.time(print(levelplot(z ~ x * y, foo, contour = TRUE)))
    user  system elapsed 
-  0.085   0.000   0.085 
+  0.077   0.008   0.085 
 > 
 > system.time(print(levelplot(z ~ x * y, foo, contour = TRUE,
 +                             panel = panel.levelplot.raster)))
    user  system elapsed 
-  0.042   0.000   0.043 
+  0.035   0.003   0.038 
 Warning message:
 In (function (x, y, z, subscripts, at = pretty(z), ..., col.regions = regions$col,  :
   'x' values are not equispaced; output may be wrong
@@ -43,7 +43,7 @@ In (function (x, y, z, subscripts, at = pretty(z), ..., col.regions = regions$co
 > system.time(print(levelplot(z ~ x * y, foo, contour = TRUE,
 +                             region.type = "contour")))
    user  system elapsed 
-  0.372   0.034   0.406 
+  0.409   0.000   0.409 
 > 
 > levelplot(z ~ x * y, subset(foo, z > 150), contour = T)
 > 
