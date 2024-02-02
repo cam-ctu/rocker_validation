@@ -1,0 +1,6 @@
+exportMethods(
+    "show" 
+)
+exportClasses(
+    "foo" 
+)

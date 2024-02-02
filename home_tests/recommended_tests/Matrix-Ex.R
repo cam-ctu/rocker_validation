@@ -6,38 +6,104 @@ library('Matrix')
 base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
 base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
 cleanEx()
+nameEx("BunchKaufman-class")
+### * BunchKaufman-class
+
+flush(stderr()); flush(stdout())
+
+### Name: BunchKaufman-class
+### Title: Dense Bunch-Kaufman Factorizations
+### Aliases: BunchKaufman-class pBunchKaufman-class
+###   coerce,BunchKaufman,dtrMatrix-method
+###   coerce,pBunchKaufman,dtpMatrix-method
+###   determinant,BunchKaufman,logical-method
+###   determinant,pBunchKaufman,logical-method
+### Keywords: algebra array classes
+
+### ** Examples
+
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showClass("BunchKaufman")
+set.seed(1)
+
+n <- 6L
+(A <- forceSymmetric(Matrix(rnorm(n * n), n, n)))
+
+## With dimnames, to see that they are propagated :
+dimnames(A) <- rep.int(list(paste0("x", seq_len(n))), 2L)
+
+(bk.A <- BunchKaufman(A))
+str(e.bk.A <- expand2(bk.A, complete = FALSE), max.level = 2L)
+str(E.bk.A <- expand2(bk.A, complete =  TRUE), max.level = 2L)
+
+## Underlying LAPACK representation
+(m.bk.A <- as(bk.A, "dtrMatrix"))
+stopifnot(identical(as(m.bk.A, "matrix"), `dim<-`(bk.A@x, bk.A@Dim)))
+
+## Number of factors is 2*b+1, b <= n, which can be nontrivial ...
+(b <- (length(E.bk.A) - 1L) %/% 2L)
+
+ae1 <- function(a, b, ...) all.equal(as(a, "matrix"), as(b, "matrix"), ...)
+ae2 <- function(a, b, ...) ae1(unname(a), unname(b), ...)
+
+## A ~ U DU U', U := prod(Pk Uk) in floating point
+stopifnot(exprs = {
+    identical(names(e.bk.A), c("U", "DU", "U."))
+    identical(e.bk.A[["U" ]], Reduce(`%*%`, E.bk.A[seq_len(b)]))
+    identical(e.bk.A[["U."]], t(e.bk.A[["U"]]))
+    ae1(A, with(e.bk.A, U %*% DU %*% U.))
+})
+
+## Factorization handled as factorized matrix
+b <- rnorm(n)
+stopifnot(identical(det(A), det(bk.A)),
+          identical(solve(A, b), solve(bk.A, b)))
+
+
+
+cleanEx()
 nameEx("BunchKaufman-methods")
 ### * BunchKaufman-methods
 
 flush(stderr()); flush(stdout())
 
 ### Name: BunchKaufman-methods
-### Title: Bunch-Kaufman Decomposition Methods
+### Title: Methods for Bunch-Kaufman Factorization
 ### Aliases: BunchKaufman BunchKaufman-methods
 ###   BunchKaufman,dspMatrix-method BunchKaufman,dsyMatrix-method
 ###   BunchKaufman,matrix-method
-### Keywords: methods
+### Keywords: algebra array methods
 
 ### ** Examples
 
-data(CAex)
-dim(CAex)
-isSymmetric(CAex)# TRUE
-CAs <- as(CAex, "symmetricMatrix")
-if(FALSE) # no method defined yet for *sparse* :
-   bk. <- BunchKaufman(CAs)
-## does apply to *dense* symmetric matrices:
-bkCA <- BunchKaufman(as(CAs, "denseMatrix"))
-bkCA
-pkCA <- pack(bkCA)
-stopifnot(is(bkCA, "triangularMatrix"),
-          is(pkCA, "triangularMatrix"),
-          is(pkCA, "packedMatrix"))
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showMethods("BunchKaufman", inherited = FALSE)
+set.seed(0)
 
-image(bkCA)# shows how sparse it is, too
-str(R.CA <- as(bkCA, "sparseMatrix"))
-## an upper triangular 72x72 matrix with only 144 non-zero entries
-stopifnot(is(R.CA, "triangularMatrix"), is(R.CA, "CsparseMatrix"))
+data(CAex, package = "Matrix")
+class(CAex) # dgCMatrix
+isSymmetric(CAex) # symmetric, but not formally
+
+A <- as(CAex, "symmetricMatrix")
+class(A) # dsCMatrix
+
+## Have methods for denseMatrix (unpacked and packed),
+## but not yet sparseMatrix ...
+## Not run: 
+##D (bk.A <- BunchKaufman(A))
+## End(Not run)
+(bk.A <- BunchKaufman(as(A, "unpackedMatrix")))
+
+## A ~ U DU U' in floating point
+str(e.bk.A <- expand2(bk.A), max.level = 2L)
+stopifnot(all.equal(as(A, "matrix"), as(Reduce(`%*%`, e.bk.A), "matrix")))
 
 
 
@@ -54,7 +120,11 @@ flush(stderr()); flush(stdout())
 
 ### ** Examples
 
-data(CAex)
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+data(CAex, package = "Matrix")
 str(CAex) # of class "dgCMatrix"
 
 image(CAex)# -> it's a simple band matrix with 5 bands
@@ -75,46 +145,67 @@ nameEx("CHMfactor-class")
 flush(stderr()); flush(stdout())
 
 ### Name: CHMfactor-class
-### Title: CHOLMOD-based Cholesky Factorizations
+### Title: Sparse Cholesky Factorizations
 ### Aliases: CHMfactor-class CHMsimpl-class CHMsuper-class dCHMsimpl-class
 ###   dCHMsuper-class nCHMsimpl-class nCHMsuper-class
-###   coerce,CHMfactor,CsparseMatrix-method coerce,CHMfactor,Matrix-method
-###   coerce,CHMfactor,RsparseMatrix-method
-###   coerce,CHMfactor,TsparseMatrix-method coerce,CHMfactor,dMatrix-method
-###   coerce,CHMfactor,dsparseMatrix-method coerce,CHMfactor,pMatrix-method
-###   coerce,CHMfactor,sparseMatrix-method
-###   coerce,CHMfactor,triangularMatrix-method
-###   determinant,CHMfactor,logical-method update,CHMfactor-method
-###   .updateCHMfactor isLDL
-### Keywords: classes algebra
+###   coerce,CHMsimpl,dtCMatrix-method coerce,CHMsuper,dgCMatrix-method
+###   determinant,CHMfactor,logical-method diag,CHMfactor-method
+###   update,CHMfactor-method isLDL
+### Keywords: algebra array classes programming utilities
 
 ### ** Examples
 
-## An example for the expand() method
-n <- 1000; m <- 200; nnz <- 2000
-set.seed(1)
-M1 <- spMatrix(n, m,
-               i = sample(n, nnz, replace = TRUE),
-               j = sample(m, nnz, replace = TRUE),
-               x = round(rnorm(nnz),1))
-XX <- crossprod(M1) ## = M1'M1  = M M'  where M <- t(M1)
-CX <- Cholesky(XX)
-isLDL(CX)
-str(CX) ## a "dCHMsimpl" object
-r <- expand(CX)
-L.P <- with(r, crossprod(L,P))  ## == L'P
-PLLP <- crossprod(L.P)          ## == (L'P)' L'P == P'LL'P  = XX = M M'
-b <- sample(m)
-stopifnot(all.equal(PLLP, XX), 
-          all(as.vector(solve(CX, b, system="P" )) == r$P %*% b),
-          all(as.vector(solve(CX, b, system="Pt")) == t(r$P) %*% b) )
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showClass("dCHMsimpl")
+showClass("dCHMsuper")
+set.seed(2)
 
-u1 <- update(CX, XX,    mult=pi)
-u2 <- update(CX, t(M1), mult=pi) # with the original M, where XX = M M'
-stopifnot(all.equal(u1,u2, tol=1e-14))
+m <- 1000L
+n <- 200L
+M <- rsparsematrix(m, n, 0.01)
+A <- crossprod(M)
 
-   ## [ See  help(Cholesky)  for more examples ]
-   ##        -------------
+## With dimnames, to see that they are propagated :
+dimnames(A) <- dn <- rep.int(list(paste0("x", seq_len(n))), 2L)
+
+(ch.A <- Cholesky(A)) # pivoted, by default
+str(e.ch.A <- expand2(ch.A, LDL =  TRUE), max.level = 2L)
+str(E.ch.A <- expand2(ch.A, LDL = FALSE), max.level = 2L)
+
+ae1 <- function(a, b, ...) all.equal(as(a, "matrix"), as(b, "matrix"), ...)
+ae2 <- function(a, b, ...) ae1(unname(a), unname(b), ...)
+
+## A ~ P1' L1 D L1' P1 ~ P1' L L' P1 in floating point
+stopifnot(exprs = {
+    identical(names(e.ch.A), c("P1.", "L1", "D", "L1.", "P1"))
+    identical(names(E.ch.A), c("P1.", "L" ,      "L." , "P1"))
+    identical(e.ch.A[["P1"]],
+              new("pMatrix", Dim = c(n, n), Dimnames = c(list(NULL), dn[2L]),
+                  margin = 2L, perm = invertPerm(ch.A@perm, 0L, 1L)))
+    identical(e.ch.A[["P1."]], t(e.ch.A[["P1"]]))
+    identical(e.ch.A[["L1."]], t(e.ch.A[["L1"]]))
+    identical(E.ch.A[["L." ]], t(E.ch.A[["L" ]]))
+    identical(e.ch.A[["D"]], Diagonal(x = diag(ch.A)))
+    all.equal(E.ch.A[["L"]], with(e.ch.A, L1 %*% sqrt(D)))
+    ae1(A, with(e.ch.A, P1. %*% L1 %*% D %*% L1. %*% P1))
+    ae1(A, with(E.ch.A, P1. %*% L  %*%         L.  %*% P1))
+    ae2(A[ch.A@perm + 1L, ch.A@perm + 1L], with(e.ch.A, L1 %*% D %*% L1.))
+    ae2(A[ch.A@perm + 1L, ch.A@perm + 1L], with(E.ch.A, L  %*%         L. ))
+})
+
+## Factorization handled as factorized matrix
+## (in some cases only optionally, depending on arguments)
+b <- rnorm(n)
+stopifnot(identical(det(A), det(ch.A, sqrt = FALSE)),
+          identical(solve(A, b), solve(ch.A, b, system = "A")))
+
+u1 <- update(ch.A,   A , mult = sqrt(2))
+u2 <- update(ch.A, t(M), mult = sqrt(2)) # updating with crossprod(M), not M
+stopifnot(all.equal(u1, u2, tolerance = 1e-14))
 
 
 
@@ -125,23 +216,71 @@ nameEx("Cholesky-class")
 flush(stderr()); flush(stdout())
 
 ### Name: Cholesky-class
-### Title: Cholesky and Bunch-Kaufman Decompositions
-### Aliases: Cholesky-class pCholesky-class BunchKaufman-class
-###   pBunchKaufman-class show,BunchKaufman-method
-###   show,pBunchKaufman-method show,Cholesky-method show,pCholesky-method
-### Keywords: classes algebra
+### Title: Dense Cholesky Factorizations
+### Aliases: Cholesky-class pCholesky-class
+###   coerce,Cholesky,dtrMatrix-method coerce,pCholesky,dtpMatrix-method
+###   determinant,Cholesky,logical-method
+###   determinant,pCholesky,logical-method diag,Cholesky-method
+###   diag,pCholesky-method
+### Keywords: algebra array classes
 
 ### ** Examples
 
-(sm <- pack(Matrix(diag(5) + 1))) # dspMatrix
-signif(csm <- chol(sm), 4)
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showClass("Cholesky")
+set.seed(1)
 
-(pm <- crossprod(Matrix(rnorm(18), nrow = 6, ncol = 3)))
-(ch <- chol(pm))
-if (toupper(ch@uplo) == "U") # which is TRUE
-   crossprod(ch)
-stopifnot(all.equal(as(crossprod(ch), "matrix"),
-                    as(pm, "matrix"), tolerance=1e-14))
+m <- 30L
+n <- 6L
+(A <- crossprod(Matrix(rnorm(m * n), m, n)))
+
+## With dimnames, to see that they are propagated :
+dimnames(A) <- dn <- rep.int(list(paste0("x", seq_len(n))), 2L)
+
+(ch.A <- Cholesky(A)) # pivoted, by default
+str(e.ch.A <- expand2(ch.A, LDL =  TRUE), max.level = 2L)
+str(E.ch.A <- expand2(ch.A, LDL = FALSE), max.level = 2L)
+
+## Underlying LAPACK representation
+(m.ch.A <- as(ch.A, "dtrMatrix")) # which is L', not L, because
+A@uplo == "U"
+stopifnot(identical(as(m.ch.A, "matrix"), `dim<-`(ch.A@x, ch.A@Dim)))
+
+ae1 <- function(a, b, ...) all.equal(as(a, "matrix"), as(b, "matrix"), ...)
+ae2 <- function(a, b, ...) ae1(unname(a), unname(b), ...)
+
+## A ~ P1' L1 D L1' P1 ~ P1' L L' P1 in floating point
+stopifnot(exprs = {
+    identical(names(e.ch.A), c("P1.", "L1", "D", "L1.", "P1"))
+    identical(names(E.ch.A), c("P1.", "L" ,      "L." , "P1"))
+    identical(e.ch.A[["P1"]],
+              new("pMatrix", Dim = c(n, n), Dimnames = c(list(NULL), dn[2L]),
+                  margin = 2L, perm = invertPerm(ch.A@perm)))
+    identical(e.ch.A[["P1."]], t(e.ch.A[["P1"]]))
+    identical(e.ch.A[["L1."]], t(e.ch.A[["L1"]]))
+    identical(E.ch.A[["L." ]], t(E.ch.A[["L" ]]))
+    identical(e.ch.A[["D"]], Diagonal(x = diag(ch.A)))
+    all.equal(E.ch.A[["L"]], with(e.ch.A, L1 %*% sqrt(D)))
+    ae1(A, with(e.ch.A, P1. %*% L1 %*% D %*% L1. %*% P1))
+    ae1(A, with(E.ch.A, P1. %*% L  %*%         L.  %*% P1))
+    ae2(A[ch.A@perm, ch.A@perm], with(e.ch.A, L1 %*% D %*% L1.))
+    ae2(A[ch.A@perm, ch.A@perm], with(E.ch.A, L  %*%         L. ))
+})
+
+## Factorization handled as factorized matrix
+b <- rnorm(n)
+all.equal(det(A), det(ch.A), tolerance = 0)
+all.equal(solve(A, b), solve(ch.A, b), tolerance = 0)
+
+## For identical results, we need the _unpivoted_ factorization
+## computed by det(A) and solve(A, b)
+(ch.A.nopivot <- Cholesky(A, perm = FALSE))
+stopifnot(identical(det(A), det(ch.A.nopivot)),
+          identical(solve(A, b), solve(ch.A.nopivot, b)))
 
 
 
@@ -151,76 +290,187 @@ nameEx("Cholesky")
 
 flush(stderr()); flush(stdout())
 
-### Name: Cholesky
-### Title: Cholesky Decomposition of a Sparse Matrix
-### Aliases: Cholesky Cholesky,denseMatrix-method Cholesky,dsCMatrix-method
-###   Cholesky,nsparseMatrix-method Cholesky,sparseMatrix-method
+### Name: Cholesky-methods
+### Title: Methods for Cholesky Factorization
+### Aliases: Cholesky Cholesky-methods Cholesky,ddiMatrix-method
+###   Cholesky,diagonalMatrix-method Cholesky,dsCMatrix-method
+###   Cholesky,dsRMatrix-method Cholesky,dsTMatrix-method
+###   Cholesky,dspMatrix-method Cholesky,dsyMatrix-method
+###   Cholesky,generalMatrix-method Cholesky,matrix-method
+###   Cholesky,symmetricMatrix-method Cholesky,triangularMatrix-method
 ###   .SuiteSparse_version
-### Keywords: array algebra
+### Keywords: algebra array methods
 
 ### ** Examples
 
-data(KNex)
-mtm <- with(KNex, crossprod(mm))
-str(mtm@factors) # empty list()
-(C1 <- Cholesky(mtm))             # uses show(<MatrixFactorization>)
-str(mtm@factors) # 'sPDCholesky' (simpl)
-(Cm <- Cholesky(mtm, super = TRUE))
-c(C1 = isLDL(C1), Cm = isLDL(Cm))
-str(mtm@factors) # 'sPDCholesky'  *and* 'SPdCholesky'
-str(cm1  <- as(C1, "sparseMatrix"))
-str(cmat <- as(Cm, "sparseMatrix"))# hmm: super is *less* sparse here
-cm1[1:20, 1:20]
-
-b <- matrix(c(rep(0, 711), 1), ncol = 1)
-## solve(Cm, b) by default solves  Ax = b, where A = Cm'Cm (= mtm)!
-## hence, the identical() check *should* work, but fails on some GOTOblas:
-x <- solve(Cm, b)
-stopifnot(identical(x, solve(Cm, b, system = "A")),
-          all.equal(x, solve(mtm, b)))
-
-Cn <- Cholesky(mtm, perm = FALSE)# no permutation -- much worse:
-sizes <- c(simple = object.size(C1),
-           super  = object.size(Cm),
-           noPerm = object.size(Cn))
-## simple is 100, super= 137, noPerm= 812 :
-noquote(cbind(format(100 * sizes / sizes[1], digits=4)))
-
-
-## Visualize the sparseness:
-dq <- function(ch) paste('"',ch,'"', sep="") ## dQuote(<UTF-8>) gives bad plots
-image(mtm, main=paste("crossprod(mm) : Sparse", dq(class(mtm))))
-image(cm1, main= paste("as(Cholesky(crossprod(mm)),\"sparseMatrix\"):",
-                        dq(class(cm1))))
 ## Don't show: 
-expand(C1) ## to check printing
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
 ## End(Don't show)
+showMethods("Cholesky", inherited = FALSE)
+set.seed(0)
 
-## Smaller example, with same matrix as in  help(chol) :
-(mm <- Matrix(toeplitz(c(10, 0, 1, 0, 3)), sparse = TRUE)) # 5 x 5
-(opts <- expand.grid(perm = c(TRUE,FALSE), LDL = c(TRUE,FALSE), super = c(FALSE,TRUE)))
-rr <- lapply(seq_len(nrow(opts)), function(i)
-             do.call(Cholesky, c(list(A = mm), opts[i,])))
-nn <- do.call(expand.grid, c(attr(opts, "out.attrs")$dimnames,
-              stringsAsFactors=FALSE,KEEP.OUT.ATTRS=FALSE))
-names(rr) <- apply(nn, 1, function(r)
-                   paste(sub("(=.).*","\\1", r), collapse=","))
-str(rr, max.level=1)
+## ---- Dense ----------------------------------------------------------
 
-str(re <- lapply(rr, expand), max.level=2) ## each has a 'P' and a 'L' matrix
-R0 <- chol(mm, pivot=FALSE)
-R1 <- chol(mm, pivot=TRUE )
-stopifnot(all.equal(t(R1), re[[1]]$L),
-          all.equal(t(R0), re[[2]]$L),
-          identical(as(1:5, "pMatrix"), re[[2]]$P), # no pivoting
-TRUE)
+## .... Positive definite ..............................................
 
-## Don't show: 
-str(dd <- .diag.dsC(mtm))
-dc <- .diag.dsC(Chx=C1) # <- directly from the Cholesky
-stopifnot(all.equal(dd,dc))
-## End(Don't show)
-# Version of the underlying SuiteSparse library by Tim Davis :
+n <- 6L
+(A1 <- crossprod(Matrix(rnorm(n * n), n, n)))
+(ch.A1.nopivot <- Cholesky(A1, perm = FALSE))
+(ch.A1 <- Cholesky(A1))
+stopifnot(exprs = {
+    length(ch.A1@perm) == ncol(A1)
+    isPerm(ch.A1@perm)
+    is.unsorted(ch.A1@perm) # typically not the identity permutation
+    length(ch.A1.nopivot@perm) == 0L
+})
+
+## A ~ P1' L D L' P1 ~ P1' L L' P1 in floating point
+str(e.ch.A1 <- expand2(ch.A1, LDL =  TRUE), max.level = 2L)
+str(E.ch.A1 <- expand2(ch.A1, LDL = FALSE), max.level = 2L)
+stopifnot(exprs = {
+    all.equal(as(A1, "matrix"), as(Reduce(`%*%`, e.ch.A1), "matrix"))
+    all.equal(as(A1, "matrix"), as(Reduce(`%*%`, E.ch.A1), "matrix"))
+})
+
+## .... Positive semidefinite but not positive definite ................
+
+A2 <- A1
+A2[1L, ] <- A2[, 1L] <- 0
+A2
+try(Cholesky(A2, perm = FALSE)) # fails as not positive definite
+ch.A2 <- Cholesky(A2) # returns, with a warning and ...
+A2.hat <- Reduce(`%*%`, expand2(ch.A2, LDL = FALSE))
+norm(A2 - A2.hat, "2") / norm(A2, "2") # 7.670858e-17
+
+## .... Not positive semidefinite ......................................
+
+A3 <- A1
+A3[1L, ] <- A3[, 1L] <- -1
+A3
+try(Cholesky(A3, perm = FALSE)) # fails as not positive definite
+ch.A3 <- Cholesky(A3) # returns, with a warning and ...
+A3.hat <- Reduce(`%*%`, expand2(ch.A3, LDL = FALSE))
+norm(A3 - A3.hat, "2") / norm(A3, "2") # 1.781568
+
+## Indeed, 'A3' is not positive semidefinite, but 'A3.hat' _is_
+ch.A3.hat <- Cholesky(A3.hat)
+A3.hat.hat <- Reduce(`%*%`, expand2(ch.A3.hat, LDL = FALSE))
+norm(A3.hat - A3.hat.hat, "2") / norm(A3.hat, "2") # 1.777944e-16
+
+## ---- Sparse ---------------------------------------------------------
+
+## Really just three cases modulo permutation :
+##
+##            type        factorization  minors of P1 A P1'
+##   1  simplicial  P1 A P1' = L1 D L1'             nonzero
+##   2  simplicial  P1 A P1' = L    L '            positive
+##   3  supernodal  P1 A P2' = L    L '            positive
+
+data(KNex, package = "Matrix")
+A4 <- crossprod(KNex[["mm"]])
+
+ch.A4 <-
+list(pivoted =
+     list(simpl1 = Cholesky(A4, perm =  TRUE, super = FALSE, LDL =  TRUE),
+          simpl0 = Cholesky(A4, perm =  TRUE, super = FALSE, LDL = FALSE),
+          super0 = Cholesky(A4, perm =  TRUE, super =  TRUE             )),
+     unpivoted =
+     list(simpl1 = Cholesky(A4, perm = FALSE, super = FALSE, LDL =  TRUE),
+          simpl0 = Cholesky(A4, perm = FALSE, super = FALSE, LDL = FALSE),
+          super0 = Cholesky(A4, perm = FALSE, super =  TRUE             )))
+ch.A4
+
+s <- simplify2array
+rapply2 <- function(object, f, ...) rapply(object, f, , , how = "list", ...)
+
+s(rapply2(ch.A4, isLDL))
+s(m.ch.A4 <- rapply2(ch.A4, expand1, "L")) # giving L = L1 sqrt(D)
+
+## By design, the pivoted and simplicial factorizations
+## are more sparse than the unpivoted and supernodal ones ...
+s(rapply2(m.ch.A4, object.size))
+
+## Which is nicely visualized by lattice-based methods for 'image'
+inm <- c("pivoted", "unpivoted")
+jnm <- c("simpl1", "simpl0", "super0")
+for(i in 1:2)
+for(j in 1:3)
+print(image(m.ch.A4[[c(i, j)]], main = paste(inm[i], jnm[j])),
+            split = c(j, i, 3L, 2L), more = i * j < 6L)
+
+simpl1 <- ch.A4[[c("pivoted", "simpl1")]]
+stopifnot(exprs = {
+    length(simpl1@perm) == ncol(A4)
+    isPerm(simpl1@perm, 0L)
+    is.unsorted(simpl1@perm) # typically not the identity permutation
+})
+
+## One can expand with and without D regardless of isLDL(.),
+## but "without" requires L = L1 sqrt(D), which is conditional
+## on min(diag(D)) >= 0, hence "with" is the default
+isLDL(simpl1)
+stopifnot(min(diag(simpl1)) >= 0)
+str(e.ch.A4 <- expand2(simpl1, LDL =  TRUE), max.level = 2L) # default
+str(E.ch.A4 <- expand2(simpl1, LDL = FALSE), max.level = 2L)
+stopifnot(exprs = {
+    all.equal(E.ch.A4[["L" ]], e.ch.A4[["L1" ]] %*% sqrt(e.ch.A4[["D"]]))
+    all.equal(E.ch.A4[["L."]], sqrt(e.ch.A4[["D"]]) %*% e.ch.A4[["L1."]])
+    all.equal(A4, as(Reduce(`%*%`, e.ch.A4), "symmetricMatrix"))
+    all.equal(A4, as(Reduce(`%*%`, E.ch.A4), "symmetricMatrix"))
+})
+
+## The "same" permutation matrix with "alternate" representation
+## [i, perm[i]] {margin=1} <-> [invertPerm(perm)[j], j] {margin=2}
+alt <- function(P) {
+    P@margin <- 1L + !(P@margin - 1L) # 1 <-> 2
+    P@perm <- invertPerm(P@perm)
+    P
+}
+
+## Expansions are elegant but inefficient (transposes are redundant)
+## hence programmers should consider methods for 'expand1' and 'diag'
+stopifnot(exprs = {
+    identical(expand1(simpl1, "P1"), alt(e.ch.A4[["P1"]]))
+    identical(expand1(simpl1, "L"), E.ch.A4[["L"]])
+    identical(Diagonal(x = diag(simpl1)), e.ch.A4[["D"]])
+})
+
+## chol(A, pivot = value) is a simple wrapper around
+## Cholesky(A, perm = value, LDL = FALSE, super = FALSE),
+## returning L' = sqrt(D) L1' _but_ giving no information
+## about the permutation P1
+selectMethod("chol", "dsCMatrix")
+stopifnot(all.equal(chol(A4, pivot = TRUE), E.ch.A4[["L."]]))
+
+## Now a symmetric matrix with positive _and_ negative eigenvalues,
+## hence _not_ positive semidefinite
+A5 <- new("dsCMatrix",
+          Dim = c(7L, 7L),
+          p = c(0:1, 3L, 6:7, 10:11, 15L),
+          i = c(0L, 0:1, 0:3, 2:5, 3:6),
+          x = c(1, 6, 38, 10, 60, 103, -4, 6, -32, -247, -2, -16, -128, -2, -67))
+(ev <- eigen(A5, only.values = TRUE)$values)
+(t.ev <- table(factor(sign(ev), -1:1))) # the matrix "inertia"
+
+ch.A5 <- Cholesky(A5)
+isLDL(ch.A5)
+(d.A5 <- diag(ch.A5)) # diag(D) is partly negative
+
+## Sylvester's law of inertia holds here, but not in general
+## in finite precision arithmetic
+stopifnot(identical(table(factor(sign(d.A5), -1:1)), t.ev))
+
+try(expand1(ch.A5, "L"))         # unable to compute L = L1 sqrt(D)
+try(expand2(ch.A5, LDL = FALSE)) # ditto
+try(chol(A5, pivot = TRUE))      # ditto
+
+## The default expansion is "square root free" and still works here
+str(e.ch.A5 <- expand2(ch.A5, LDL = TRUE), max.level = 2L)
+stopifnot(all.equal(A5, as(Reduce(`%*%`, e.ch.A5), "symmetricMatrix")))
+
+## Version of the SuiteSparse library, which includes CHOLMOD
 .SuiteSparse_version()
 
 
@@ -238,20 +488,11 @@ flush(stderr()); flush(stdout())
 ###   Arith,CsparseMatrix,numeric-method Arith,numeric,CsparseMatrix-method
 ###   Compare,CsparseMatrix,CsparseMatrix-method
 ###   Logic,CsparseMatrix,CsparseMatrix-method Math,CsparseMatrix-method
-###   as.vector,CsparseMatrix-method
-###   coerce,CsparseMatrix,RsparseMatrix-method
-###   coerce,CsparseMatrix,TsparseMatrix-method
-###   coerce,CsparseMatrix,denseMatrix-method
-###   coerce,CsparseMatrix,generalMatrix-method
-###   coerce,CsparseMatrix,matrix-method
-###   coerce,CsparseMatrix,packedMatrix-method
 ###   coerce,CsparseMatrix,sparseVector-method
-###   coerce,CsparseMatrix,unpackedMatrix-method
-###   coerce,CsparseMatrix,vector-method coerce,matrix,CsparseMatrix-method
-###   coerce,numLike,CsparseMatrix-method diag,CsparseMatrix-method
-###   diag<-,CsparseMatrix-method log,CsparseMatrix-method
-###   t,CsparseMatrix-method .validateCsparse
-### Keywords: classes
+###   coerce,matrix,CsparseMatrix-method coerce,vector,CsparseMatrix-method
+###   diag,CsparseMatrix-method diag<-,CsparseMatrix-method
+###   log,CsparseMatrix-method t,CsparseMatrix-method .validateCsparse
+### Keywords: array classes
 
 ### ** Examples
 
@@ -271,10 +512,14 @@ flush(stderr()); flush(stdout())
 ### Name: Diagonal
 ### Title: Construct a Diagonal Matrix
 ### Aliases: Diagonal .sparseDiagonal .trDiagonal .symDiagonal
-### Keywords: array algebra
+### Keywords: array utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 Diagonal(3)
 Diagonal(x = 10^(3:1))
 Diagonal(x = (1:4) >= 2)#-> "ldiMatrix"
@@ -304,7 +549,7 @@ flush(stderr()); flush(stdout())
 ### Name: Hilbert
 ### Title: Generate a Hilbert matrix
 ### Aliases: Hilbert
-### Keywords: array algebra
+### Keywords: array utilities
 
 ### ** Examples
 
@@ -325,9 +570,13 @@ flush(stderr()); flush(stdout())
 
 ### ** Examples
 
-data(KNex)
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+data(KNex, package = "Matrix")
 class(KNex$mm)
-  dim(KNex$mm)
+dim(KNex$mm)
 image(KNex$mm)
 str(KNex)
 
@@ -353,7 +602,7 @@ flush(stderr()); flush(stdout())
 ### Name: KhatriRao
 ### Title: Khatri-Rao Matrix Product
 ### Aliases: KhatriRao
-### Keywords: methods array
+### Keywords: algebra arith array utilities
 
 ### ** Examples
 
@@ -423,23 +672,59 @@ nameEx("LU-class")
 
 flush(stderr()); flush(stdout())
 
-### Name: LU-class
-### Title: LU (dense) Matrix Decompositions
-### Aliases: LU-class denseLU-class
-### Keywords: classes algebra
+### Name: denseLU-class
+### Title: Dense LU Factorizations
+### Aliases: denseLU-class coerce,denseLU,dgeMatrix-method
+###   determinant,denseLU,logical-method
+### Keywords: algebra array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showClass("denseLU")
 set.seed(1)
-mm <- Matrix(round(rnorm(9),2), nrow = 3)
-mm
-str(lum <- lu(mm))
-elu <- expand(lum)
-elu # three components: "L", "U", and "P", the permutation
-elu$L %*% elu$U
-(m2 <- with(elu, P %*% L %*% U)) # the same as 'mm'
-stopifnot(all.equal(as(mm, "matrix"),
-                    as(m2, "matrix")))
+
+n <- 3L
+(A <- Matrix(round(rnorm(n * n), 2L), n, n))
+
+## With dimnames, to see that they are propagated :
+dimnames(A) <- dn <- list(paste0("r", seq_len(n)),
+                          paste0("c", seq_len(n)))
+
+(lu.A <- lu(A))
+str(e.lu.A <- expand2(lu.A), max.level = 2L)
+
+## Underlying LAPACK representation
+(m.lu.A <- as(lu.A, "dgeMatrix")) # which is L and U interlaced
+stopifnot(identical(as(m.lu.A, "matrix"), `dim<-`(lu.A@x, lu.A@Dim)))
+
+ae1 <- function(a, b, ...) all.equal(as(a, "matrix"), as(b, "matrix"), ...)
+ae2 <- function(a, b, ...) ae1(unname(a), unname(b), ...)
+
+## A ~ P1' L U in floating point
+stopifnot(exprs = {
+    identical(names(e.lu.A), c("P1.", "L", "U"))
+    identical(e.lu.A[["P1."]],
+              new(  "pMatrix", Dim = c(n, n), Dimnames = c(dn[1L], list(NULL)),
+                  margin = 1L, perm = invertPerm(asPerm(lu.A@perm))))
+    identical(e.lu.A[["L"]],
+              new("dtrMatrix", Dim = c(n, n), Dimnames = list(NULL, NULL),
+                  uplo = "L", diag = "U", x = lu.A@x))
+    identical(e.lu.A[["U"]],
+              new("dtrMatrix", Dim = c(n, n), Dimnames = c(list(NULL), dn[2L]),
+                  uplo = "U", diag = "N", x = lu.A@x))
+    ae1(A, with(e.lu.A, P1. %*% L %*% U))
+    ae2(A[asPerm(lu.A@perm), ], with(e.lu.A, L %*% U))
+})
+
+## Factorization handled as factorized matrix
+b <- rnorm(n)
+stopifnot(identical(det(A), det(lu.A)),
+          identical(solve(A, b), solve(lu.A, b)))
 
 
 
@@ -450,7 +735,7 @@ nameEx("Matrix-class")
 flush(stderr()); flush(stdout())
 
 ### Name: Matrix-class
-### Title: Virtual Class "Matrix" Class of Matrices
+### Title: Virtual Class "Matrix" of Matrices
 ### Aliases: Matrix-class !,Matrix-method &,Matrix,ddiMatrix-method
 ###   &,Matrix,ldiMatrix-method *,Matrix,ddiMatrix-method
 ###   *,Matrix,ldiMatrix-method +,Matrix,missing-method
@@ -463,33 +748,35 @@ flush(stderr()); flush(stdout())
 ###   Ops,Matrix,matrix-method Ops,Matrix,sparseVector-method
 ###   Ops,NULL,Matrix-method Ops,matrix,Matrix-method Summary,Matrix-method
 ###   ^,Matrix,ddiMatrix-method ^,Matrix,ldiMatrix-method
-###   as.array,Matrix-method as.logical,Matrix-method
+###   as.array,Matrix-method as.complex,Matrix-method
+###   as.integer,Matrix-method as.logical,Matrix-method
 ###   as.matrix,Matrix-method as.numeric,Matrix-method
-###   as.vector,Matrix-method cbind2,ANY,Matrix-method
-###   cbind2,Matrix,ANY-method cbind2,Matrix,Matrix-method
-###   cbind2,Matrix,NULL-method cbind2,Matrix,atomicVector-method
-###   cbind2,Matrix,missing-method cbind2,NULL,Matrix-method
-###   coerce,ANY,Matrix-method coerce,Matrix,complex-method
-###   coerce,Matrix,corMatrix-method coerce,Matrix,diagonalMatrix-method
-###   coerce,Matrix,dpoMatrix-method coerce,Matrix,dppMatrix-method
-###   coerce,Matrix,indMatrix-method coerce,Matrix,integer-method
-###   coerce,Matrix,logical-method coerce,Matrix,matrix-method
-###   coerce,Matrix,numeric-method coerce,Matrix,pMatrix-method
+###   as.vector,Matrix-method coerce,ANY,Matrix-method
+###   coerce,Matrix,CsparseMatrix-method coerce,Matrix,RsparseMatrix-method
+###   coerce,Matrix,TsparseMatrix-method coerce,Matrix,array-method
+###   coerce,Matrix,complex-method coerce,Matrix,corMatrix-method
+###   coerce,Matrix,dMatrix-method coerce,Matrix,ddenseMatrix-method
+###   coerce,Matrix,denseMatrix-method coerce,Matrix,diagonalMatrix-method
+###   coerce,Matrix,double-method coerce,Matrix,dpoMatrix-method
+###   coerce,Matrix,dppMatrix-method coerce,Matrix,dsparseMatrix-method
+###   coerce,Matrix,generalMatrix-method coerce,Matrix,indMatrix-method
+###   coerce,Matrix,integer-method coerce,Matrix,lMatrix-method
+###   coerce,Matrix,ldenseMatrix-method coerce,Matrix,logical-method
+###   coerce,Matrix,lsparseMatrix-method coerce,Matrix,matrix-method
+###   coerce,Matrix,nMatrix-method coerce,Matrix,ndenseMatrix-method
+###   coerce,Matrix,nsparseMatrix-method coerce,Matrix,numeric-method
+###   coerce,Matrix,pMatrix-method coerce,Matrix,packedMatrix-method
+###   coerce,Matrix,pcorMatrix-method coerce,Matrix,sparseMatrix-method
 ###   coerce,Matrix,symmetricMatrix-method
-###   coerce,Matrix,triangularMatrix-method coerce,Matrix,vector-method
-###   coerce,matrix,Matrix-method cov2cor,Matrix-method
+###   coerce,Matrix,triangularMatrix-method
+###   coerce,Matrix,unpackedMatrix-method coerce,Matrix,vector-method
+###   coerce,matrix,Matrix-method coerce,vector,Matrix-method
 ###   determinant,Matrix,missing-method determinant,Matrix,logical-method
 ###   diff,Matrix-method dim,Matrix-method dimnames,Matrix-method
 ###   dimnames<-,Matrix,NULL-method dimnames<-,Matrix,list-method
-###   drop,Matrix-method eigen,Matrix,ANY,logical-method
-###   eigen,Matrix,ANY,missing-method head,Matrix-method
-###   initialize,Matrix-method length,Matrix-method mean,Matrix-method
-###   rbind2,ANY,Matrix-method rbind2,Matrix,ANY-method
-###   rbind2,Matrix,Matrix-method rbind2,Matrix,NULL-method
-###   rbind2,Matrix,atomicVector-method rbind2,Matrix,missing-method
-###   rbind2,NULL,Matrix-method rep,Matrix-method tail,Matrix-method
-###   unname,Matrix,missing-method svd,Matrix-method det print.Matrix
-### Keywords: classes algebra
+###   drop,Matrix-method head,Matrix-method initialize,Matrix-method
+###   length,Matrix-method tail,Matrix-method unname,Matrix-method det
+### Keywords: array classes
 
 ### ** Examples
 
@@ -524,10 +811,14 @@ flush(stderr()); flush(stdout())
 ### Name: Matrix
 ### Title: Construct a Classed Matrix
 ### Aliases: Matrix
-### Keywords: array algebra
+### Keywords: array utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 Matrix(0, 3, 2)             # 3 by 2 matrix of zeros -> sparse
 Matrix(0, 3, 2, sparse=FALSE)# -> 'dense'
 
@@ -574,7 +865,7 @@ flush(stderr()); flush(stdout())
 ### Name: MatrixClass
 ### Title: The Matrix (Super-) Class of a Class
 ### Aliases: MatrixClass
-### Keywords: classes
+### Keywords: utilities
 
 ### ** Examples
 
@@ -593,16 +884,23 @@ nameEx("MatrixFactorization-class")
 flush(stderr()); flush(stdout())
 
 ### Name: MatrixFactorization-class
-### Title: Class "MatrixFactorization" of Matrix Factorizations
-### Aliases: MatrixFactorization-class CholeskyFactorization-class
-###   determinant,MatrixFactorization,missing-method
-###   dim,MatrixFactorization-method show,MatrixFactorization-method
-### Keywords: classes
+### Title: Virtual Class "MatrixFactorization" of Matrix Factorizations
+### Aliases: MatrixFactorization-class BunchKaufmanFactorization-class
+###   CholeskyFactorization-class SchurFactorization-class LU-class
+###   QR-class determinant,MatrixFactorization,missing-method
+###   dim,MatrixFactorization-method dimnames,MatrixFactorization-method
+###   dimnames<-,MatrixFactorization,NULL-method
+###   dimnames<-,MatrixFactorization,list-method
+###   length,MatrixFactorization-method show,MatrixFactorization-method
+###   unname,MatrixFactorization-method
+###   show,BunchKaufmanFactorization-method
+###   show,CholeskyFactorization-method show,SchurFactorization-method
+###   show,LU-method show,QR-method
+### Keywords: algebra array classes
 
 ### ** Examples
 
 showClass("MatrixFactorization")
-getClass("CholeskyFactorization")
 
 
 
@@ -614,18 +912,11 @@ flush(stderr()); flush(stdout())
 
 ### Name: RsparseMatrix-class
 ### Title: Class "RsparseMatrix" of Sparse Matrices in Row-compressed Form
-### Aliases: RsparseMatrix-class as.vector,RsparseMatrix-method
-###   coerce,RsparseMatrix,CsparseMatrix-method
-###   coerce,RsparseMatrix,TsparseMatrix-method
-###   coerce,RsparseMatrix,denseMatrix-method
-###   coerce,RsparseMatrix,generalMatrix-method
-###   coerce,RsparseMatrix,matrix-method
-###   coerce,RsparseMatrix,packedMatrix-method
-###   coerce,RsparseMatrix,unpackedMatrix-method
-###   coerce,RsparseMatrix,vector-method coerce,matrix,RsparseMatrix-method
-###   coerce,numLike,RsparseMatrix-method diag,RsparseMatrix-method
-###   diag<-,RsparseMatrix-method t,RsparseMatrix-method
-### Keywords: classes
+### Aliases: RsparseMatrix-class coerce,RsparseMatrix,sparseVector-method
+###   coerce,matrix,RsparseMatrix-method coerce,vector,RsparseMatrix-method
+###   diag,RsparseMatrix-method diag<-,RsparseMatrix-method
+###   t,RsparseMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
@@ -640,18 +931,43 @@ nameEx("Schur-class")
 flush(stderr()); flush(stdout())
 
 ### Name: Schur-class
-### Title: Class "Schur" of Schur Matrix Factorizations
-### Aliases: Schur-class
-### Keywords: classes
+### Title: Schur Factorizations
+### Aliases: Schur-class determinant,Schur,logical-method
+### Keywords: algebra array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 showClass("Schur")
-Schur(M <- Matrix(c(1:7, 10:2), 4,4))
-## Trivial, of course:
-str(Schur(Diagonal(5)))
+set.seed(0)
 
-## for more examples, see Schur()
+n <- 4L
+(A <- Matrix(rnorm(n * n), n, n))
+
+## With dimnames, to see that they are propagated :
+dimnames(A) <- list(paste0("r", seq_len(n)),
+                    paste0("c", seq_len(n)))
+
+(sch.A <- Schur(A))
+str(e.sch.A <- expand2(sch.A), max.level = 2L)
+
+## A ~ Q T Q' in floating point
+stopifnot(exprs = {
+    identical(names(e.sch.A), c("Q", "T", "Q."))
+    all.equal(A, with(e.sch.A, Q %*% T %*% Q.))
+})
+
+## Factorization handled as factorized matrix
+b <- rnorm(n)
+stopifnot(all.equal(det(A), det(sch.A)),
+          all.equal(solve(A, b), solve(sch.A, b)))
+
+## One of the non-general cases:
+Schur(Diagonal(6L))
 
 
 
@@ -661,41 +977,46 @@ nameEx("Schur")
 
 flush(stderr()); flush(stdout())
 
-### Name: Schur
-### Title: Schur Decomposition of a Matrix
-### Aliases: Schur Schur,Matrix,missing-method Schur,matrix,missing-method
-###   Schur,dgeMatrix,logical-method Schur,diagonalMatrix,logical-method
-###   Schur,dsyMatrix,logical-method Schur,generalMatrix,logical-method
-###   Schur,matrix,logical-method Schur,symmetricMatrix,logical-method
-###   Schur,triangularMatrix,logical-method
-### Keywords: algebra
+### Name: Schur-methods
+### Title: Methods for Schur Factorization
+### Aliases: Schur Schur-methods Schur,dgeMatrix-method
+###   Schur,diagonalMatrix-method Schur,dsyMatrix-method
+###   Schur,generalMatrix-method Schur,matrix-method
+###   Schur,symmetricMatrix-method Schur,triangularMatrix-method
+### Keywords: algebra array methods
 
 ### ** Examples
 
-Schur(Hilbert(9))              # Schur factorization (real eigenvalues)
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showMethods("Schur", inherited = FALSE)
+set.seed(0)
 
-(A <- Matrix(round(rnorm(5*5, sd = 100)), nrow = 5))
-(Sch.A <- Schur(A))
+Schur(Hilbert(9L)) # real eigenvalues
 
-eTA <- eigen(Sch.A@T)
-str(SchA <- Schur(A, vectors=FALSE))# no 'T' ==> simple list
-stopifnot(all.equal(eTA$values, eigen(A)$values, tolerance = 1e-13),
-          all.equal(eTA$values,
-                    local({z <- Sch.A@EValues
-                           z[order(Mod(z), decreasing=TRUE)]}), tolerance = 1e-13),
-          identical(SchA$T, Sch.A@T),
-          identical(SchA$EValues, Sch.A@EValues))
+(A <- Matrix(round(rnorm(25L, sd = 100)), 5L, 5L))
+(sch.A <- Schur(A)) # complex eigenvalues
 
-## For the faint of heart, we provide Schur() also for traditional matrices:
+## A ~ Q T Q' in floating point
+str(e.sch.A <- expand2(sch.A), max.level = 2L)
+stopifnot(all.equal(A, Reduce(`%*%`, e.sch.A)))
 
-a.m <- function(M) unname(as(M, "matrix"))
-a <- a.m(A)
-Sch.a <- Schur(a)
-stopifnot(identical(Sch.a, list(Q = a.m(Sch.A @ Q),
-				T = a.m(Sch.A @ T),
-				EValues = Sch.A@EValues)),
-	  all.equal(a, with(Sch.a, Q %*% T %*% t(Q)))
-)
+(e1 <- eigen(sch.A@T, only.values = TRUE)$values)
+(e2 <- eigen(    A  , only.values = TRUE)$values)
+(e3 <- sch.A@EValues)
+
+stopifnot(exprs = {
+    all.equal(e1, e2, tolerance = 1e-13)
+    all.equal(e1, e3[order(Mod(e3), decreasing = TRUE)], tolerance = 1e-13) 
+    identical(Schur(A, vectors = FALSE),
+              list(T = sch.A@T, EValues = e3))    
+    identical(Schur(as(A, "matrix")),
+              list(Q = as(sch.A@Q, "matrix"),
+                   T = as(sch.A@T, "matrix"), EValues = e3))
+})
 
 
 
@@ -705,9 +1026,9 @@ nameEx("Subassign-methods")
 
 flush(stderr()); flush(stdout())
 
-### Name: [<--methods
+### Name: Subassign-methods
 ### Title: Methods for "[<-" - Assigning to Subsets for 'Matrix'
-### Aliases: [<--methods Subassign-methods
+### Aliases: [<- [<--methods Subassign-methods
 ###   [<-,CsparseMatrix,Matrix,missing,replValue-method
 ###   [<-,CsparseMatrix,index,index,replValue-method
 ###   [<-,CsparseMatrix,index,index,sparseVector-method
@@ -767,10 +1088,14 @@ flush(stderr()); flush(stdout())
 ###   [<-,sparseMatrix,missing,missing,ANY-method
 ###   [<-,sparseVector,index,missing,replValueSp-method
 ###   [<-,sparseVector,sparseVector,missing,replValueSp-method
-### Keywords: methods array
+### Keywords: array methods
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 set.seed(101)
 (a <- m <- Matrix(round(rnorm(7*4),2), nrow = 7))
 
@@ -804,19 +1129,11 @@ flush(stderr()); flush(stdout())
 
 ### Name: TsparseMatrix-class
 ### Title: Class "TsparseMatrix" of Sparse Matrices in Triplet Form
-### Aliases: TsparseMatrix-class as.vector,TsparseMatrix-method
-###   coerce,TsparseMatrix,CsparseMatrix-method
-###   coerce,TsparseMatrix,RsparseMatrix-method
-###   coerce,TsparseMatrix,denseMatrix-method
-###   coerce,TsparseMatrix,generalMatrix-method
-###   coerce,TsparseMatrix,matrix-method
-###   coerce,TsparseMatrix,packedMatrix-method
-###   coerce,TsparseMatrix,sparseVector-method
-###   coerce,TsparseMatrix,unpackedMatrix-method
-###   coerce,TsparseMatrix,vector-method coerce,matrix,TsparseMatrix-method
-###   coerce,numLike,TsparseMatrix-method diag,TsparseMatrix-method
-###   diag<-,TsparseMatrix-method t,TsparseMatrix-method
-### Keywords: classes
+### Aliases: TsparseMatrix-class coerce,TsparseMatrix,sparseVector-method
+###   coerce,matrix,TsparseMatrix-method coerce,vector,TsparseMatrix-method
+###   diag,TsparseMatrix-method diag<-,TsparseMatrix-method
+###   t,TsparseMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
@@ -839,43 +1156,39 @@ nameEx("USCounties")
 flush(stderr()); flush(stdout())
 
 ### Name: USCounties
-### Title: USCounties Contiguity Matrix
+### Title: Contiguity Matrix of U.S. Counties
 ### Aliases: USCounties
 ### Keywords: datasets
 
 ### ** Examples
 
-data(USCounties)
-(n <- ncol(USCounties))
-IM <- .symDiagonal(n)
-nn <- 50
-set.seed(1)
-rho <- runif(nn, 0, 1)
-system.time(MJ <- sapply(rho, function(x)
-	determinant(IM - x * USCounties, logarithm = TRUE)$modulus))
-
-## can be done faster, by update()ing the Cholesky factor:
-nWC <- -USCounties
-C1 <- Cholesky(nWC, Imult = 2)
-system.time(MJ1 <- n * log(rho) +
-            sapply(rho, function(x)
-                   2 * c(determinant(update(C1, nWC, 1/x))$modulus)))
-all.equal(MJ, MJ1)
 ## Don't show: 
-stopifnot( all.equal(MJ, MJ1) )
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
 ## End(Don't show)
+data(USCounties, package = "Matrix")
+(n <- ncol(USCounties))
+I <- .symDiagonal(n)
 
-C2 <- Cholesky(nWC, super = TRUE, Imult = 2)
-system.time(MJ2 <- n * log(rho) +
-            sapply(rho, function(x)
-                   2 * c(determinant(update(C2, nWC, 1/x))$modulus)))
-all.equal(MJ, MJ2)  ## Don't show: 
-stopifnot(all.equal(MJ, MJ2))
-## End(Don't show)
-system.time(MJ3 <- n * log(rho) + Matrix:::ldetL2up(C1, nWC, 1/rho))
-stopifnot(all.equal(MJ, MJ3))
-system.time(MJ4 <- n * log(rho) + Matrix:::ldetL2up(C2, nWC, 1/rho))
-stopifnot(all.equal(MJ, MJ4))
+set.seed(1)
+r <- 50L
+rho <- 1 / runif(r, 0, 0.5)
+
+system.time(MJ0 <- sapply(rho, function(mult)
+    determinant(USCounties + mult * I, logarithm = TRUE)$modulus))
+
+## Can be done faster by updating the Cholesky factor:
+
+C1 <- Cholesky(USCounties, Imult = 2)
+system.time(MJ1 <- sapply(rho, function(mult)
+    determinant(update(C1, USCounties, mult), sqrt = FALSE)$modulus))
+stopifnot(all.equal(MJ0, MJ1))
+
+C2 <- Cholesky(USCounties, super = TRUE, Imult = 2)
+system.time(MJ2 <- sapply(rho, function(mult)
+    determinant(update(C2, USCounties, mult), sqrt = FALSE)$modulus))
+stopifnot(all.equal(MJ0, MJ2))
 
 
 
@@ -885,75 +1198,33 @@ nameEx("Xtrct-methods")
 
 flush(stderr()); flush(stdout())
 
-### Name: [-methods
+### Name: Subscript-methods
 ### Title: Methods for "[": Extraction or Subsetting in Package 'Matrix'
-### Aliases: [-methods [,CsparseMatrix,index,index,logical-method
-###   [,CsparseMatrix,index,missing,logical-method
-###   [,CsparseMatrix,missing,index,logical-method
-###   [,Matrix,ANY,ANY,ANY-method [,Matrix,index,index,missing-method
+### Aliases: [ [-methods Subscript-methods [,Matrix,ANY,NULL,ANY-method
+###   [,Matrix,NULL,ANY,ANY-method [,Matrix,NULL,NULL,ANY-method
+###   [,Matrix,index,index,logical-method
+###   [,Matrix,index,index,missing-method
+###   [,Matrix,index,missing,logical-method
 ###   [,Matrix,index,missing,missing-method
 ###   [,Matrix,lMatrix,missing,missing-method
-###   [,Matrix,logical,missing,missing-method
-###   [,Matrix,matrix,missing,ANY-method
 ###   [,Matrix,matrix,missing,missing-method
+###   [,Matrix,missing,index,logical-method
 ###   [,Matrix,missing,index,missing-method
-###   [,Matrix,missing,missing,ANY-method
 ###   [,Matrix,missing,missing,logical-method
 ###   [,Matrix,missing,missing,missing-method
 ###   [,Matrix,nMatrix,missing,missing-method
-###   [,TsparseMatrix,index,index,logical-method
-###   [,TsparseMatrix,index,missing,logical-method
-###   [,TsparseMatrix,missing,index,logical-method
-###   [,abIndex,index,ANY,ANY-method
-###   [,denseMatrix,index,index,logical-method
-###   [,denseMatrix,index,missing,logical-method
-###   [,denseMatrix,matrix,missing,ANY-method
-###   [,denseMatrix,matrix,missing,missing-method
-###   [,denseMatrix,missing,index,logical-method
-###   [,diagonalMatrix,index,index,logical-method
-###   [,diagonalMatrix,index,missing,logical-method
-###   [,diagonalMatrix,missing,index,logical-method
-###   [,indMatrix,index,missing,logical-method
-###   [,packedMatrix,NULL,NULL,logical-method
-###   [,packedMatrix,NULL,NULL,missing-method
-###   [,packedMatrix,NULL,index,logical-method
-###   [,packedMatrix,NULL,index,missing-method
-###   [,packedMatrix,NULL,missing,logical-method
-###   [,packedMatrix,NULL,missing,missing-method
-###   [,packedMatrix,index,NULL,logical-method
-###   [,packedMatrix,index,NULL,missing-method
-###   [,packedMatrix,index,index,logical-method
-###   [,packedMatrix,index,index,missing-method
-###   [,packedMatrix,index,missing,logical-method
-###   [,packedMatrix,index,missing,missing-method
-###   [,packedMatrix,lMatrix,NULL,logical-method
-###   [,packedMatrix,lMatrix,NULL,missing-method
-###   [,packedMatrix,lMatrix,index,logical-method
-###   [,packedMatrix,lMatrix,index,missing-method
-###   [,packedMatrix,lMatrix,missing,logical-method
-###   [,packedMatrix,lMatrix,missing,missing-method
-###   [,packedMatrix,matrix,NULL,logical-method
-###   [,packedMatrix,matrix,NULL,missing-method
-###   [,packedMatrix,matrix,index,logical-method
-###   [,packedMatrix,matrix,index,missing-method
-###   [,packedMatrix,matrix,missing,logical-method
-###   [,packedMatrix,matrix,missing,missing-method
-###   [,packedMatrix,missing,NULL,logical-method
-###   [,packedMatrix,missing,NULL,missing-method
-###   [,packedMatrix,missing,index,logical-method
-###   [,packedMatrix,missing,index,missing-method
-###   [,packedMatrix,missing,missing,logical-method
-###   [,packedMatrix,missing,missing,missing-method
-###   [,sparseMatrix,index,index,logical-method
-###   [,sparseMatrix,index,missing,logical-method
-###   [,sparseMatrix,missing,index,logical-method
-###   [,sparseVector,index,ANY,ANY-method
+###   [,abIndex,index,ANY,ANY-method [,sparseVector,index,ANY,ANY-method
 ###   [,sparseVector,lsparseVector,ANY,ANY-method
 ###   [,sparseVector,nsparseVector,ANY,ANY-method
-### Keywords: methods array
+### Keywords: array methods
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 str(m <- Matrix(round(rnorm(7*4),2), nrow = 7))
 stopifnot(identical(m, m[]))
 m[2, 3]   # simple number
@@ -991,6 +1262,10 @@ flush(stderr()); flush(stdout())
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 showClass("abIndex")
 ii <- c(-3:40, 20:70)
 str(ai <- as(ii, "abIndex"))# note
@@ -1010,7 +1285,7 @@ flush(stderr()); flush(stdout())
 ### Name: abIseq
 ### Title: Sequence Generation of "abIndex", Abstract Index Vectors
 ### Aliases: abIseq abIseq1 c.abIndex
-### Keywords: manip classes
+### Keywords: manip utilities
 
 ### ** Examples
 
@@ -1032,11 +1307,11 @@ flush(stderr()); flush(stdout())
 
 ### Name: all-methods
 ### Title: "Matrix" Methods for Functions all() and any()
-### Aliases: all-methods any-methods all,Matrix-method all,ddiMatrix-method
-###   all,ldiMatrix-method all,lsparseMatrix-method
+### Aliases: all all-methods any any-methods all,Matrix-method
+###   all,ddiMatrix-method all,ldiMatrix-method all,lsparseMatrix-method
 ###   all,nsparseMatrix-method any,Matrix-method any,ddiMatrix-method
 ###   any,lMatrix-method any,ldiMatrix-method any,nsparseMatrix-method
-### Keywords: methods
+### Keywords: logic methods
 
 ### ** Examples
 
@@ -1072,7 +1347,7 @@ flush(stderr()); flush(stdout())
 
 ### Name: all.equal-methods
 ### Title: Matrix Package Methods for Function all.equal()
-### Aliases: all.equal-methods all.equal,ANY,Matrix-method
+### Aliases: all.equal all.equal-methods all.equal,ANY,Matrix-method
 ###   all.equal,ANY,sparseMatrix-method all.equal,ANY,sparseVector-method
 ###   all.equal,Matrix,ANY-method all.equal,Matrix,Matrix-method
 ###   all.equal,abIndex,abIndex-method all.equal,abIndex,numLike-method
@@ -1082,7 +1357,7 @@ flush(stderr()); flush(stdout())
 ###   all.equal,sparseVector,ANY-method
 ###   all.equal,sparseVector,sparseMatrix-method
 ###   all.equal,sparseVector,sparseVector-method
-### Keywords: methods arith
+### Keywords: arith logic methods programming
 
 ### ** Examples
 
@@ -1092,10 +1367,10 @@ showMethods("all.equal")
 ex <- expand(lu. <- lu(A))
 stopifnot( all.equal(as(A[lu.@p + 1L, lu.@q + 1L], "CsparseMatrix"),
                      lu.@L %*% lu.@U),
-           with(ex, all.equal(as(P %*% A %*% Q, "CsparseMatrix"),
+           with(ex, all.equal(as(P %*% A %*% t(Q), "CsparseMatrix"),
                               L %*% U)),
            with(ex, all.equal(as(A, "CsparseMatrix"),
-                              t(P) %*% L %*% U %*% t(Q))))
+                              t(P) %*% L %*% U %*% Q)))
 
 
 
@@ -1108,14 +1383,8 @@ flush(stderr()); flush(stdout())
 ### Name: atomicVector-class
 ### Title: Virtual Class "atomicVector" of Atomic Vectors
 ### Aliases: atomicVector-class Ops,atomicVector,sparseVector-method
-###   cbind2,atomicVector,Matrix-method
-###   cbind2,atomicVector,ddiMatrix-method
-###   cbind2,atomicVector,ldiMatrix-method
 ###   coerce,atomicVector,dsparseVector-method
 ###   coerce,atomicVector,sparseVector-method
-###   rbind2,atomicVector,Matrix-method
-###   rbind2,atomicVector,ddiMatrix-method
-###   rbind2,atomicVector,ldiMatrix-method
 ### Keywords: classes
 
 ### ** Examples
@@ -1130,7 +1399,7 @@ nameEx("band")
 
 flush(stderr()); flush(stdout())
 
-### Name: band
+### Name: band-methods
 ### Title: Extract bands of a matrix
 ### Aliases: band band-methods triu triu-methods tril tril-methods
 ###   band,CsparseMatrix-method band,RsparseMatrix-method
@@ -1142,10 +1411,14 @@ flush(stderr()); flush(stdout())
 ###   tril,CsparseMatrix-method tril,RsparseMatrix-method
 ###   tril,TsparseMatrix-method tril,denseMatrix-method
 ###   tril,diagonalMatrix-method tril,indMatrix-method tril,matrix-method
-### Keywords: methods algebra
+### Keywords: array methods
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 ## A random sparse matrix :
 set.seed(7)
 m <- matrix(0, 5, 5)
@@ -1191,10 +1464,14 @@ flush(stderr()); flush(stdout())
 ### Name: bandSparse
 ### Title: Construct Sparse Banded Matrix from (Sup-/Super-) Diagonals
 ### Aliases: bandSparse
-### Keywords: array algebra
+### Keywords: array utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 diags <- list(1:30, 10*(1:20), 100*(1:20))
 s1 <- bandSparse(13, k = -c(0:2, 6), diag = c(diags, diags[2]), symm=TRUE)
 s1
@@ -1207,7 +1484,7 @@ bk <- c(0:4, 7,9)
 
 ## If you want a pattern matrix, but with "sparse"-diagonals,
 ## you currently need to go via logical sparse:
-lLis <- lapply(list(rpois(20, 2), rpois(20,1), rpois(20,3))[c(1:3,2:3,3:2)],
+lLis <- lapply(list(rpois(20, 2), rpois(20, 1), rpois(20, 3))[c(1:3, 2:3, 3:2)],
                as.logical)
 (s4 <- bandSparse(20, k = bk, symm = TRUE, diag = lLis))
 (s4. <- as(drop0(s4), "nsparseMatrix"))
@@ -1237,10 +1514,14 @@ flush(stderr()); flush(stdout())
 ### Name: bdiag
 ### Title: Construct a Block Diagonal Matrix
 ### Aliases: bdiag .bdiag
-### Keywords: array
+### Keywords: array utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 bdiag(matrix(1:4, 2), diag(3))
 ## combine "Matrix" class and traditional matrices:
 bdiag(Diagonal(2), matrix(1:3, 3,4), diag(3:2))
@@ -1260,7 +1541,7 @@ stopifnot(is(bdiag(ml), "lsparseMatrix"),
 rblockTri <- function(nb, max.ni, lambda = 3) {
    .bdiag(replicate(nb, {
          n <- sample.int(max.ni, 1)
-         tril(Matrix(rpois(n*n, lambda=lambda), n,n)) }))
+         tril(Matrix(rpois(n * n, lambda = lambda), n, n)) }))
 }
 
 (T4 <- rblockTri(4, 10, lambda = 1))
@@ -1288,7 +1569,8 @@ bdiag_m <- function(lmat) {
         x = as.double(unlist(lmat, recursive=FALSE, use.names=FALSE)))
 }
 
-l12 <- replicate(12, matrix(rpois(16, lambda = 6.4), 4,4), simplify=FALSE)
+l12 <- replicate(12, matrix(rpois(16, lambda = 6.4), 4, 4),
+                 simplify=FALSE)
 dim(T12 <- bdiag_m(l12))# 48 x 48
 T12[1:20, 1:20]
 
@@ -1300,10 +1582,11 @@ nameEx("boolean-matprod")
 
 flush(stderr()); flush(stdout())
 
-### Name: %&%-methods
+### Name: boolmatmult-methods
 ### Title: Boolean Arithmetic Matrix Products: '%&%' and Methods
-### Aliases: %&% %&%-methods %&%,ANY,ANY-method %&%,ANY,Matrix-method
-###   %&%,ANY,matrix-method %&%,CsparseMatrix,RsparseMatrix-method
+### Aliases: %&% %&%-methods boolmatmult-methods %&%,ANY,ANY-method
+###   %&%,ANY,Matrix-method %&%,ANY,matrix-method
+###   %&%,CsparseMatrix,RsparseMatrix-method
 ###   %&%,CsparseMatrix,TsparseMatrix-method
 ###   %&%,CsparseMatrix,diagonalMatrix-method
 ###   %&%,CsparseMatrix,mMatrix-method %&%,Matrix,ANY-method
@@ -1337,13 +1620,19 @@ flush(stderr()); flush(stdout())
 ###   %&%,nsparseMatrix,nCsparseMatrix-method
 ###   %&%,nsparseMatrix,nMatrix-method
 ###   %&%,nsparseMatrix,nsparseMatrix-method
-###   %&%,numLike,sparseVector-method %&%,sparseMatrix,mMatrix-method
+###   %&%,numLike,sparseVector-method %&%,pMatrix,Matrix-method
+###   %&%,pMatrix,indMatrix-method %&%,pMatrix,matrix-method
+###   %&%,pMatrix,pMatrix-method %&%,sparseMatrix,mMatrix-method
 ###   %&%,sparseMatrix,sparseMatrix-method %&%,sparseVector,mMatrix-method
 ###   %&%,sparseVector,numLike-method %&%,sparseVector,sparseVector-method
-### Keywords: methods
+### Keywords: algebra array logic methods
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 set.seed(7)
 L <- Matrix(rnorm(20) > 1,    4,5)
 (N <- as(L, "nMatrix"))
@@ -1371,13 +1660,42 @@ nameEx("cBind")
 
 flush(stderr()); flush(stdout())
 
-### Name: cBind
+### Name: cbind2-methods
 ### Title: 'cbind()' and 'rbind()' recursively built on cbind2/rbind2
-### Aliases: cbind2,denseMatrix,sparseMatrix-method
+### Aliases: cbind2 cbind2-methods rbind2 rbind2-methods
+###   cbind2,Matrix,Matrix-method cbind2,Matrix,NULL-method
+###   cbind2,Matrix,missing-method cbind2,Matrix,vector-method
+###   cbind2,NULL,Matrix-method cbind2,ddiMatrix,matrix-method
+###   cbind2,ddiMatrix,vector-method cbind2,denseMatrix,denseMatrix-method
+###   cbind2,denseMatrix,matrix-method cbind2,denseMatrix,numeric-method
+###   cbind2,denseMatrix,sparseMatrix-method
+###   cbind2,diagonalMatrix,sparseMatrix-method
+###   cbind2,indMatrix,indMatrix-method cbind2,ldiMatrix,matrix-method
+###   cbind2,ldiMatrix,vector-method cbind2,matrix,ddiMatrix-method
+###   cbind2,matrix,denseMatrix-method cbind2,matrix,ldiMatrix-method
+###   cbind2,matrix,sparseMatrix-method cbind2,numeric,denseMatrix-method
 ###   cbind2,sparseMatrix,denseMatrix-method
+###   cbind2,sparseMatrix,diagonalMatrix-method
+###   cbind2,sparseMatrix,matrix-method
+###   cbind2,sparseMatrix,sparseMatrix-method cbind2,vector,Matrix-method
+###   cbind2,vector,ddiMatrix-method cbind2,vector,ldiMatrix-method
+###   rbind2,Matrix,Matrix-method rbind2,Matrix,NULL-method
+###   rbind2,Matrix,missing-method rbind2,Matrix,vector-method
+###   rbind2,NULL,Matrix-method rbind2,ddiMatrix,matrix-method
+###   rbind2,ddiMatrix,vector-method rbind2,denseMatrix,denseMatrix-method
+###   rbind2,denseMatrix,matrix-method rbind2,denseMatrix,numeric-method
 ###   rbind2,denseMatrix,sparseMatrix-method
+###   rbind2,diagonalMatrix,sparseMatrix-method
+###   rbind2,indMatrix,indMatrix-method rbind2,ldiMatrix,matrix-method
+###   rbind2,ldiMatrix,vector-method rbind2,matrix,ddiMatrix-method
+###   rbind2,matrix,denseMatrix-method rbind2,matrix,ldiMatrix-method
+###   rbind2,matrix,sparseMatrix-method rbind2,numeric,denseMatrix-method
 ###   rbind2,sparseMatrix,denseMatrix-method
-### Keywords: array manip
+###   rbind2,sparseMatrix,diagonalMatrix-method
+###   rbind2,sparseMatrix,matrix-method
+###   rbind2,sparseMatrix,sparseMatrix-method rbind2,vector,Matrix-method
+###   rbind2,vector,ddiMatrix-method rbind2,vector,ldiMatrix-method
+### Keywords: array manip methods
 
 ### ** Examples
 
@@ -1399,55 +1717,101 @@ nameEx("chol")
 
 flush(stderr()); flush(stdout())
 
-### Name: chol
-### Title: The Cholesky Decomposition - 'Matrix' S4 Generic and Methods
-### Aliases: chol chol-methods chol,diagonalMatrix-method
-###   chol,dgCMatrix-method chol,dgRMatrix-method chol,dgTMatrix-method
-###   chol,dgeMatrix-method chol,dsCMatrix-method chol,dsRMatrix-method
-###   chol,dsTMatrix-method chol,dspMatrix-method chol,dsyMatrix-method
-###   chol,generalMatrix-method chol,symmetricMatrix-method
-###   chol,triangularMatrix-method
-### Keywords: algebra array
+### Name: chol-methods
+### Title: Compute the Cholesky Factor of a Matrix
+### Aliases: chol chol-methods chol,ddiMatrix-method
+###   chol,diagonalMatrix-method chol,dsCMatrix-method
+###   chol,dsRMatrix-method chol,dsTMatrix-method chol,dspMatrix-method
+###   chol,dsyMatrix-method chol,generalMatrix-method
+###   chol,symmetricMatrix-method chol,triangularMatrix-method
+### Keywords: algebra array methods
 
 ### ** Examples
 
-showMethods(chol, inherited = FALSE) # show different methods
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showMethods("chol", inherited = FALSE)
+set.seed(0)
 
-sy2 <- new("dsyMatrix", Dim = as.integer(c(2,2)), x = c(14, NA,32,77))
-(c2 <- chol(sy2))#-> "Cholesky" matrix
-stopifnot(all.equal(c2, chol(as(sy2, "dpoMatrix")), tolerance= 1e-13))
-str(c2)
+## ---- Dense ----------------------------------------------------------
 
-## An example where chol() can't work
-(sy3 <- new("dsyMatrix", Dim = as.integer(c(2,2)), x = c(14, -1, 2, -7)))
-try(chol(sy3)) # error, since it is not positive definite
+## chol(x, pivot = value) wrapping Cholesky(x, perm = value)
+selectMethod("chol", "dsyMatrix")
 
-## A sparse example --- exemplifying 'pivot'
-(mm <- toeplitz(as(c(10, 0, 1, 0, 3), "sparseVector"))) # 5 x 5
-(R <- chol(mm)) ## default:  pivot = FALSE
-R2 <- chol(mm, pivot=FALSE)
-stopifnot( identical(R, R2), all.equal(crossprod(R), mm) )
-(R. <- chol(mm, pivot=TRUE))# nice band structure,
-## but of course crossprod(R.) is *NOT* equal to mm
-## --> see Cholesky() and its examples, for the pivot structure & factorization
-stopifnot(all.equal(sqrt(det(mm)), det(R)),
-          all.equal(prod(diag(R)), det(R)),
-          all.equal(prod(diag(R.)), det(R)))
+## Except in packed cases where pivoting is not yet available
+selectMethod("chol", "dspMatrix")
 
-## a second, even sparser example:
-(M2 <- toeplitz(as(c(1,.5, rep(0,12), -.1), "sparseVector")))
-c2 <- chol(M2)
-C2 <- chol(M2, pivot=TRUE)
-## For the experts, check the caching of the factorizations:
-ff <- M2@factors[["spdCholesky"]]
-FF <- M2@factors[["sPdCholesky"]]
-L1 <- as(ff, "Matrix")# pivot=FALSE: no perm.
-L2 <- as(FF, "Matrix"); P2 <- as(FF, "pMatrix")
-stopifnot(identical(t(L1), c2),
-          all.equal(t(L2), C2, tolerance=0),#-- why not identical()?
-          all.equal(M2, tcrossprod(L1)),             # M = LL'
-          all.equal(M2, crossprod(crossprod(L2, P2)))# M = P'L L'P
-         )
+## .... Positive definite ..............................................
+
+(A1 <- new("dsyMatrix", Dim = c(2L, 2L), x = c(1, 2, 2, 5)))
+(R1.nopivot <- chol(A1))
+(R1 <- chol(A1, pivot = TRUE))
+
+## In 2-by-2 cases, we know that the permutation is 1:2 or 2:1,
+## even if in general 'chol' does not say ...
+
+stopifnot(exprs = {
+   all.equal(  A1           , as(crossprod(R1.nopivot), "dsyMatrix"))
+   all.equal(t(A1[2:1, 2:1]), as(crossprod(R1        ), "dsyMatrix"))
+   identical(Cholesky(A1)@perm, 2:1) # because 5 > 1
+})
+
+## .... Positive semidefinite but not positive definite ................
+
+(A2 <- new("dpoMatrix", Dim = c(2L, 2L), x = c(1, 2, 2, 4)))
+try(R2.nopivot <- chol(A2)) # fails as not positive definite
+(R2 <- chol(A2, pivot = TRUE)) # returns, with a warning and ...
+
+stopifnot(exprs = {
+   all.equal(t(A2[2:1, 2:1]), as(crossprod(R2), "dsyMatrix"))
+   identical(Cholesky(A2)@perm, 2:1) # because 4 > 1
+})
+
+## .... Not positive semidefinite ......................................
+
+(A3 <- new("dsyMatrix", Dim = c(2L, 2L), x = c(1, 2, 2, 3)))
+try(R3.nopivot <- chol(A3)) # fails as not positive definite
+(R3 <- chol(A3, pivot = TRUE)) # returns, with a warning and ...
+
+## _Not_ equal: see details and examples in help("Cholesky")
+all.equal(t(A3[2:1, 2:1]), as(crossprod(R3), "dsyMatrix"))
+
+## ---- Sparse ---------------------------------------------------------
+
+## chol(x, pivot = value) wrapping
+## Cholesky(x, perm = value, LDL = FALSE, super = FALSE)
+selectMethod("chol", "dsCMatrix")
+
+## Except in diagonal cases which are handled "directly"
+selectMethod("chol", "ddiMatrix")
+
+(A4 <- toeplitz(as(c(10, 0, 1, 0, 3), "sparseVector")))
+(ch.A4.nopivot <- Cholesky(A4, perm = FALSE, LDL = FALSE, super = FALSE))
+(ch.A4 <- Cholesky(A4, perm = TRUE, LDL = FALSE, super = FALSE))
+(R4.nopivot <- chol(A4))
+(R4 <- chol(A4, pivot = TRUE))
+
+det4 <- det(A4)
+b4 <- rnorm(5L)
+x4 <- solve(A4, b4)
+
+stopifnot(exprs = {
+    identical(R4.nopivot, expand1(ch.A4.nopivot, "L."))
+    identical(R4, expand1(ch.A4, "L."))
+    all.equal(A4, crossprod(R4.nopivot))
+    all.equal(A4[ch.A4@perm + 1L, ch.A4@perm + 1L], crossprod(R4))
+    all.equal(diag(R4.nopivot), sqrt(diag(ch.A4.nopivot)))
+    all.equal(diag(R4), sqrt(diag(ch.A4)))
+    all.equal(sqrt(det4), det(R4.nopivot))
+    all.equal(sqrt(det4), det(R4))
+    all.equal(det4, det(ch.A4.nopivot, sqrt = FALSE))
+    all.equal(det4, det(ch.A4, sqrt = FALSE))
+    all.equal(x4, solve(R4.nopivot, solve(t(R4.nopivot), b4)))
+    all.equal(x4, solve(ch.A4.nopivot, b4))
+    all.equal(x4, solve(ch.A4, b4))
+})
 
 
 
@@ -1458,18 +1822,28 @@ nameEx("chol2inv-methods")
 flush(stderr()); flush(stdout())
 
 ### Name: chol2inv-methods
-### Title: Inverse from Choleski or QR Decomposition - Matrix Methods
-### Aliases: chol2inv-methods chol2inv,ANY-method chol2inv,CHMfactor-method
-###   chol2inv,denseMatrix-method chol2inv,diagonalMatrix-method
-###   chol2inv,dtrMatrix-method chol2inv,sparseMatrix-method
-### Keywords: methods algebra
+### Title: Inverse from Cholesky Factor
+### Aliases: chol2inv chol2inv-methods chol2inv,ANY-method
+###   chol2inv,ddiMatrix-method chol2inv,diagonalMatrix-method
+###   chol2inv,dtCMatrix-method chol2inv,dtRMatrix-method
+###   chol2inv,dtTMatrix-method chol2inv,dtrMatrix-method
+###   chol2inv,dtpMatrix-method chol2inv,generalMatrix-method
+###   chol2inv,symmetricMatrix-method chol2inv,triangularMatrix-method
+### Keywords: algebra array methods
 
 ### ** Examples
 
-(M  <- Matrix(cbind(1, 1:3, c(1,3,7))))
-(cM <- chol(M)) # a "Cholesky" object, inheriting from "dtrMatrix"
-chol2inv(cM) %*% M # the identity
-stopifnot(all(chol2inv(cM) %*% M - Diagonal(nrow(M))) < 1e-10)
+(A <- Matrix(cbind(c(1, 1, 1), c(1, 2, 4), c(1, 4, 16))))
+(R <- chol(A))
+(L <- t(R))
+(R2i <- chol2inv(R))
+(L2i <- chol2inv(R))
+stopifnot(exprs = {
+    all.equal(R2i, tcrossprod(solve(R)))
+    all.equal(L2i,  crossprod(solve(L)))
+    all.equal(as(R2i %*% A, "matrix"), diag(3L)) # the identity 
+    all.equal(as(L2i %*% A, "matrix"), diag(3L)) # ditto
+})
 
 
 
@@ -1479,22 +1853,23 @@ nameEx("colSums")
 
 flush(stderr()); flush(stdout())
 
-### Name: colSums
+### Name: colSums-methods
 ### Title: Form Row and Column Sums and Means
-### Aliases: colSums colMeans rowSums rowMeans colSums,CsparseMatrix-method
-###   colSums,RsparseMatrix-method colSums,TsparseMatrix-method
-###   colSums,denseMatrix-method colSums,diagonalMatrix-method
-###   colSums,indMatrix-method colMeans,CsparseMatrix-method
-###   colMeans,RsparseMatrix-method colMeans,TsparseMatrix-method
-###   colMeans,denseMatrix-method colMeans,diagonalMatrix-method
-###   colMeans,indMatrix-method rowSums,CsparseMatrix-method
-###   rowSums,RsparseMatrix-method rowSums,TsparseMatrix-method
-###   rowSums,denseMatrix-method rowSums,diagonalMatrix-method
-###   rowSums,indMatrix-method rowMeans,CsparseMatrix-method
-###   rowMeans,RsparseMatrix-method rowMeans,TsparseMatrix-method
-###   rowMeans,denseMatrix-method rowMeans,diagonalMatrix-method
-###   rowMeans,indMatrix-method
-### Keywords: array algebra arith
+### Aliases: colSums colSums-methods colMeans colMeans-methods rowSums
+###   rowSums-methods rowMeans rowMeans-methods
+###   colSums,CsparseMatrix-method colSums,RsparseMatrix-method
+###   colSums,TsparseMatrix-method colSums,denseMatrix-method
+###   colSums,diagonalMatrix-method colSums,indMatrix-method
+###   colMeans,CsparseMatrix-method colMeans,RsparseMatrix-method
+###   colMeans,TsparseMatrix-method colMeans,denseMatrix-method
+###   colMeans,diagonalMatrix-method colMeans,indMatrix-method
+###   rowSums,CsparseMatrix-method rowSums,RsparseMatrix-method
+###   rowSums,TsparseMatrix-method rowSums,denseMatrix-method
+###   rowSums,diagonalMatrix-method rowSums,indMatrix-method
+###   rowMeans,CsparseMatrix-method rowMeans,RsparseMatrix-method
+###   rowMeans,TsparseMatrix-method rowMeans,denseMatrix-method
+###   rowMeans,diagonalMatrix-method rowMeans,indMatrix-method
+### Keywords: algebra arith array methods
 
 ### ** Examples
 
@@ -1524,10 +1899,12 @@ M
 colSums(M)
 rowMeans(M)
 ## Assertions :
-stopifnot(all.equal(colSums(M),
-		    setNames(c(1,1,6,6,6,6,3,2), colnames(M))),
-	  all.equal(rowMeans(M), structure(c(1,1,4,8,12,3,2) / 8,
-					   .Names = paste0("r", 1:7))))
+stopifnot(exprs = {
+    all.equal(colSums(M),
+              structure(c(1,1,6,6,6,6,3,2), names = colnames(M)))
+    all.equal(rowMeans(M),
+              structure(c(1,1,4,8,12,3,2)/8, names = paste0("r", 1:7)))
+})
 
 
 
@@ -1541,10 +1918,15 @@ flush(stderr()); flush(stdout())
 ### Title: Compute Approximate CONDition number and 1-Norm of (Large)
 ###   Matrices
 ### Aliases: condest onenormest
+### Keywords: algebra math utilities
 
 ### ** Examples
 
-data(KNex)
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+data(KNex, package = "Matrix")
 mtm <- with(KNex, crossprod(mm))
 system.time(ce <- condest(mtm))
 sum(abs(ce$v)) ## || v ||_1  == 1
@@ -1581,7 +1963,7 @@ flush(stderr()); flush(stdout())
 ###   Math2,dMatrix-method Ops,dMatrix,dMatrix-method
 ###   Ops,dMatrix,ddiMatrix-method Ops,dMatrix,lMatrix-method
 ###   Ops,dMatrix,ldiMatrix-method Ops,dMatrix,nMatrix-method
-###   coerce,matrix,dMatrix-method coerce,numLike,dMatrix-method
+###   coerce,matrix,dMatrix-method coerce,vector,dMatrix-method
 ###   zapsmall,dMatrix-method Arith,lMatrix,numeric-method
 ###   Arith,lMatrix,logical-method Arith,logical,lMatrix-method
 ###   Arith,numeric,lMatrix-method Compare,lMatrix,logical-method
@@ -1592,11 +1974,15 @@ flush(stderr()); flush(stdout())
 ###   Ops,lMatrix,dMatrix-method Ops,lMatrix,lMatrix-method
 ###   Ops,lMatrix,nMatrix-method Ops,lMatrix,numeric-method
 ###   Ops,numeric,lMatrix-method Summary,lMatrix-method
-###   coerce,matrix,lMatrix-method coerce,numLike,lMatrix-method
-### Keywords: classes algebra
+###   coerce,matrix,lMatrix-method coerce,vector,lMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
  showClass("dMatrix")
 
  set.seed(101)
@@ -1623,9 +2009,9 @@ flush(stderr()); flush(stdout())
 ###   Arith,logical,ddenseMatrix-method Arith,numeric,ddenseMatrix-method
 ###   Math,ddenseMatrix-method Summary,ddenseMatrix-method
 ###   ^,ddenseMatrix,ddiMatrix-method ^,ddenseMatrix,ldiMatrix-method
-###   coerce,matrix,ddenseMatrix-method coerce,numLike,ddenseMatrix-method
+###   coerce,matrix,ddenseMatrix-method coerce,vector,ddenseMatrix-method
 ###   log,ddenseMatrix-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
@@ -1661,15 +2047,15 @@ flush(stderr()); flush(stdout())
 ###   Ops,ddiMatrix,ddiMatrix-method Ops,ddiMatrix,ldiMatrix-method
 ###   Ops,ddiMatrix,logical-method Ops,ddiMatrix,numeric-method
 ###   Ops,ddiMatrix,sparseMatrix-method Summary,ddiMatrix-method
-###   as.numeric,ddiMatrix-method cbind2,ddiMatrix,atomicVector-method
-###   cbind2,ddiMatrix,matrix-method cbind2,matrix,ddiMatrix-method
-###   prod,ddiMatrix-method rbind2,ddiMatrix,atomicVector-method
-###   rbind2,ddiMatrix,matrix-method rbind2,matrix,ddiMatrix-method
-###   sum,ddiMatrix-method
-### Keywords: classes
+###   prod,ddiMatrix-method sum,ddiMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (d2 <- Diagonal(x = c(10,1)))
 str(d2)
 ## slightly larger in internal size:
@@ -1693,34 +2079,12 @@ flush(stderr()); flush(stdout())
 ### Name: denseMatrix-class
 ### Title: Virtual Class "denseMatrix" of All Dense Matrices
 ### Aliases: denseMatrix-class -,denseMatrix,missing-method
-###   Math,denseMatrix-method as.logical,denseMatrix-method
-###   as.numeric,denseMatrix-method as.vector,denseMatrix-method
-###   cbind2,denseMatrix,denseMatrix-method
-###   cbind2,denseMatrix,matrix-method cbind2,denseMatrix,numeric-method
-###   cbind2,matrix,denseMatrix-method cbind2,numeric,denseMatrix-method
-###   coerce,ANY,denseMatrix-method coerce,denseMatrix,CsparseMatrix-method
-###   coerce,denseMatrix,RsparseMatrix-method
-###   coerce,denseMatrix,TsparseMatrix-method
-###   coerce,denseMatrix,dMatrix-method
-###   coerce,denseMatrix,ddenseMatrix-method
-###   coerce,denseMatrix,dsparseMatrix-method
-###   coerce,denseMatrix,generalMatrix-method
-###   coerce,denseMatrix,lMatrix-method
-###   coerce,denseMatrix,ldenseMatrix-method
-###   coerce,denseMatrix,lsparseMatrix-method
-###   coerce,denseMatrix,matrix-method coerce,denseMatrix,nMatrix-method
-###   coerce,denseMatrix,ndenseMatrix-method
-###   coerce,denseMatrix,nsparseMatrix-method
-###   coerce,denseMatrix,packedMatrix-method
-###   coerce,denseMatrix,sparseMatrix-method
-###   coerce,denseMatrix,unpackedMatrix-method
-###   coerce,denseMatrix,vector-method coerce,matrix,denseMatrix-method
-###   coerce,numLike,denseMatrix-method dim<-,denseMatrix-method
-###   log,denseMatrix-method rbind2,denseMatrix,denseMatrix-method
-###   rbind2,denseMatrix,matrix-method rbind2,denseMatrix,numeric-method
-###   rbind2,matrix,denseMatrix-method rbind2,numeric,denseMatrix-method
+###   Math,denseMatrix-method coerce,ANY,denseMatrix-method
+###   coerce,matrix,denseMatrix-method coerce,vector,denseMatrix-method
+###   dim<-,denseMatrix-method log,denseMatrix-method
+###   mean,denseMatrix-method rep,denseMatrix-method
 ###   show,denseMatrix-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
@@ -1740,10 +2104,14 @@ flush(stderr()); flush(stdout())
 ###   Arith,dgCMatrix,logical-method Arith,dgCMatrix,numeric-method
 ###   Arith,logical,dgCMatrix-method Arith,numeric,dgCMatrix-method
 ###   coerce,matrix,dgCMatrix-method determinant,dgCMatrix,logical-method
-### Keywords: classes algebra
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (m <- Matrix(c(0,0,2:0), 3,5))
 str(m)
 m[,1]
@@ -1766,10 +2134,14 @@ flush(stderr()); flush(stdout())
 ### Title: Sparse matrices in triplet form
 ### Aliases: dgTMatrix-class +,dgTMatrix,dgTMatrix-method
 ###   determinant,dgTMatrix,logical-method
-### Keywords: classes algebra
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 m <- Matrix(0+1:28, nrow = 4)
 m[-3,c(2,4:5,7)] <- m[ 3, 1:4] <- m[1:3, 6] <- 0
 (mT <- as(m, "TsparseMatrix"))
@@ -1803,11 +2175,15 @@ flush(stderr()); flush(stdout())
 ### Title: Transform Triangular Matrices from Unit Triangular to General
 ###   Triangular and Back
 ### Aliases: diagU2N diagN2U .diagU2N .diagN2U
-### Keywords: utilities classes
+### Keywords: array attribute utilities
 
 ### ** Examples
 
-(T <- Diagonal(7) + triu(Matrix(rpois(49, 1/4), 7,7), k = 1))
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+(T <- Diagonal(7) + triu(Matrix(rpois(49, 1/4), 7, 7), k = 1))
 (uT <- diagN2U(T)) # "unitriangular"
 (t.u <- diagN2U(10*T))# changes the diagonal!
 stopifnot(all(T == uT), diag(t.u) == 1,
@@ -1833,37 +2209,15 @@ flush(stderr()); flush(stdout())
 ### Title: Class "diagonalMatrix" of Diagonal Matrices
 ### Aliases: diagonalMatrix-class Math,diagonalMatrix-method
 ###   Ops,diagonalMatrix,triangularMatrix-method
-###   as.logical,diagonalMatrix-method as.numeric,diagonalMatrix-method
-###   as.vector,diagonalMatrix-method
-###   cbind2,diagonalMatrix,sparseMatrix-method
-###   coerce,diagonalMatrix,CsparseMatrix-method
-###   coerce,diagonalMatrix,RsparseMatrix-method
-###   coerce,diagonalMatrix,TsparseMatrix-method
-###   coerce,diagonalMatrix,dMatrix-method
-###   coerce,diagonalMatrix,ddenseMatrix-method
-###   coerce,diagonalMatrix,denseMatrix-method
-###   coerce,diagonalMatrix,dsparseMatrix-method
-###   coerce,diagonalMatrix,generalMatrix-method
-###   coerce,diagonalMatrix,lMatrix-method
-###   coerce,diagonalMatrix,ldenseMatrix-method
-###   coerce,diagonalMatrix,lsparseMatrix-method
-###   coerce,diagonalMatrix,matrix-method
-###   coerce,diagonalMatrix,nMatrix-method
-###   coerce,diagonalMatrix,ndenseMatrix-method
-###   coerce,diagonalMatrix,nsparseMatrix-method
-###   coerce,diagonalMatrix,packedMatrix-method
 ###   coerce,diagonalMatrix,sparseVector-method
 ###   coerce,diagonalMatrix,symmetricMatrix-method
 ###   coerce,diagonalMatrix,triangularMatrix-method
-###   coerce,diagonalMatrix,unpackedMatrix-method
-###   coerce,diagonalMatrix,vector-method
 ###   coerce,matrix,diagonalMatrix-method
 ###   determinant,diagonalMatrix,logical-method diag,diagonalMatrix-method
 ###   diag<-,diagonalMatrix-method log,diagonalMatrix-method
-###   print,diagonalMatrix-method rbind2,diagonalMatrix,sparseMatrix-method
-###   show,diagonalMatrix-method summary,diagonalMatrix-method
-###   t,diagonalMatrix-method
-### Keywords: classes
+###   print,diagonalMatrix-method show,diagonalMatrix-method
+###   summary,diagonalMatrix-method t,diagonalMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
@@ -1894,6 +2248,7 @@ flush(stderr()); flush(stdout())
 ### Name: dimScale
 ### Title: Scale the Rows and Columns of a Matrix
 ### Aliases: dimScale rowScale colScale
+### Keywords: algebra arith array utilities
 
 ### ** Examples
 
@@ -1922,10 +2277,14 @@ flush(stderr()); flush(stdout())
 ### Name: dmperm
 ### Title: Dulmage-Mendelsohn Permutation / Decomposition
 ### Aliases: dmperm
-### Keywords: algebra
+### Keywords: algebra array utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 set.seed(17)
 (S9 <- rsparsematrix(9, 9, nnz = 10, symmetric=TRUE)) # dsCMatrix
 str( dm9 <- dmperm(S9) )
@@ -1967,23 +2326,28 @@ flush(stderr()); flush(stdout())
 ### Title: Positive Semi-definite Dense (Packed | Non-packed) Numeric
 ###   Matrices
 ### Aliases: dpoMatrix-class dppMatrix-class corMatrix-class
-###   Arith,dpoMatrix,logical-method Arith,dpoMatrix,numeric-method
-###   Arith,logical,dpoMatrix-method Arith,numeric,dpoMatrix-method
-###   Ops,dpoMatrix,logical-method Ops,dpoMatrix,numeric-method
-###   Ops,logical,dpoMatrix-method Ops,numeric,dpoMatrix-method
-###   coerce,dpoMatrix,corMatrix-method coerce,dpoMatrix,dppMatrix-method
-###   coerce,matrix,dpoMatrix-method determinant,dpoMatrix,logical-method
-###   Arith,dppMatrix,logical-method Arith,dppMatrix,numeric-method
-###   Arith,logical,dppMatrix-method Arith,numeric,dppMatrix-method
-###   Ops,dppMatrix,logical-method Ops,dppMatrix,numeric-method
-###   Ops,logical,dppMatrix-method Ops,numeric,dppMatrix-method
-###   coerce,dppMatrix,corMatrix-method coerce,dppMatrix,dpoMatrix-method
-###   coerce,matrix,dppMatrix-method determinant,dppMatrix,logical-method
-###   coerce,matrix,corMatrix-method
-### Keywords: classes algebra
+###   pcorMatrix-class Arith,dpoMatrix,logical-method
+###   Arith,dpoMatrix,numeric-method Arith,logical,dpoMatrix-method
+###   Arith,numeric,dpoMatrix-method Ops,dpoMatrix,logical-method
+###   Ops,dpoMatrix,numeric-method Ops,logical,dpoMatrix-method
+###   Ops,numeric,dpoMatrix-method coerce,dpoMatrix,corMatrix-method
+###   coerce,dpoMatrix,dppMatrix-method coerce,matrix,dpoMatrix-method
+###   determinant,dpoMatrix,logical-method Arith,dppMatrix,logical-method
+###   Arith,dppMatrix,numeric-method Arith,logical,dppMatrix-method
+###   Arith,numeric,dppMatrix-method Ops,dppMatrix,logical-method
+###   Ops,dppMatrix,numeric-method Ops,logical,dppMatrix-method
+###   Ops,numeric,dppMatrix-method coerce,dppMatrix,dpoMatrix-method
+###   coerce,dppMatrix,pcorMatrix-method coerce,matrix,dppMatrix-method
+###   determinant,dppMatrix,logical-method coerce,matrix,corMatrix-method
+###   coerce,matrix,pcorMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 h6 <- Hilbert(6)
 rcond(h6)
 str(h6)
@@ -1995,9 +2359,9 @@ str(hp6 <- as(h6, "dppMatrix"))
 (ch6 <- as(h6, "corMatrix"))
 stopifnot(all.equal(h6 * 27720, round(27720 * h6), tolerance = 1e-14),
           all.equal(ch6@sd^(-2), 2*(1:6)-1, tolerance= 1e-12))
-chch <- chol(ch6)
+chch <- Cholesky(ch6, perm = FALSE)
 stopifnot(identical(chch, ch6@factors$Cholesky),
-          all(abs(crossprod(chch) - ch6) < 1e-10))
+          all(abs(crossprod(as(chch, "dtrMatrix")) - ch6) < 1e-10))
 
 
 
@@ -2008,29 +2372,28 @@ nameEx("drop0")
 flush(stderr()); flush(stdout())
 
 ### Name: drop0
-### Title: Drop "Explicit Zeroes" from a Sparse Matrix
+### Title: Drop Non-Structural Zeros from a Sparse Matrix
 ### Aliases: drop0
-### Keywords: utilities array
+### Keywords: array manip utilities
 
 ### ** Examples
 
-m <- spMatrix(10,20, i= 1:8, j=2:9, x = c(0:2,3:-1))
-m
+(m <- sparseMatrix(i = 1:8, j = 2:9, x = c(0:2, 3:-1),
+                   dims = c(10L, 20L)))
 drop0(m)
 
 ## A larger example:
 t5 <- new("dtCMatrix", Dim = c(5L, 5L), uplo = "L",
           x = c(10, 1, 3, 10, 1, 10, 1, 10, 10),
-	  i = c(0L,2L,4L, 1L, 3L,2L,4L, 3L, 4L),
-	  p = c(0L, 3L, 5L, 7:9))
-TT <- kronecker(t5, kronecker(kronecker(t5,t5), t5))
+          i = c(0L,2L,4L, 1L, 3L,2L,4L, 3L, 4L),
+          p = c(0L, 3L, 5L, 7:9))
+TT <- kronecker(t5, kronecker(kronecker(t5, t5), t5))
 IT <- solve(TT)
-I. <- TT %*% IT ;  nnzero(I.) # 697 ( = 625 + 72 )
+I. <- TT %*% IT ;  nnzero(I.) # 697 ( == 625 + 72 )
 I.0 <- drop0(zapsmall(I.))
 ## which actually can be more efficiently achieved by
 I.. <- drop0(I., tol = 1e-15)
-stopifnot(all(I.0 == Diagonal(625)),
-          nnzero(I..) == 625)
+stopifnot(all(I.0 == Diagonal(625)), nnzero(I..) == 625)
 
 
 
@@ -2043,14 +2406,16 @@ flush(stderr()); flush(stdout())
 ### Name: dsCMatrix-class
 ### Title: Numeric Symmetric Sparse (column compressed) Matrices
 ### Aliases: dsCMatrix-class dsTMatrix-class
-###   Arith,dsCMatrix,dsCMatrix-method
-###   coerce,dsCMatrix,RsparseMatrix-method
-###   determinant,dsCMatrix,logical-method
+###   Arith,dsCMatrix,dsCMatrix-method determinant,dsCMatrix,logical-method
 ###   determinant,dsTMatrix,logical-method
-### Keywords: classes algebra
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 mm <- Matrix(toeplitz(c(10, 0, 1, 0, 3)), sparse = TRUE)
 mm # automatically dsCMatrix
 str(mm)
@@ -2081,12 +2446,15 @@ flush(stderr()); flush(stdout())
 
 ### Name: dsRMatrix-class
 ### Title: Symmetric Sparse Compressed Row Matrices
-### Aliases: dsRMatrix-class coerce,dsRMatrix,CsparseMatrix-method
-###   determinant,dsRMatrix,logical-method
-### Keywords: classes algebra
+### Aliases: dsRMatrix-class determinant,dsRMatrix,logical-method
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (m0 <- new("dsRMatrix"))
 m2 <- new("dsRMatrix", Dim = c(2L,2L),
           x = c(3,1), j = c(1L,1L), p = 0:2)
@@ -2111,14 +2479,8 @@ flush(stderr()); flush(stdout())
 ###   Arith,dsparseMatrix,numeric-method Arith,logical,dsparseMatrix-method
 ###   Arith,numeric,dsparseMatrix-method
 ###   Ops,dsparseMatrix,nsparseMatrix-method Summary,dsparseMatrix-method
-###   as.logical,dsparseMatrix-method as.numeric,dsparseMatrix-method
-###   coerce,dsparseMatrix,lMatrix-method
-###   coerce,dsparseMatrix,lsparseMatrix-method
-###   coerce,dsparseMatrix,nMatrix-method
-###   coerce,dsparseMatrix,nsparseMatrix-method
-###   coerce,matrix,dsparseMatrix-method
-###   coerce,numLike,dsparseMatrix-method
-### Keywords: classes
+###   coerce,matrix,dsparseMatrix-method coerce,vector,dsparseMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
@@ -2139,11 +2501,16 @@ flush(stderr()); flush(stdout())
 ###   coerce,dsyMatrix,dppMatrix-method
 ###   determinant,dsyMatrix,logical-method
 ###   coerce,dspMatrix,dpoMatrix-method coerce,dspMatrix,dppMatrix-method
+###   coerce,dspMatrix,pcorMatrix-method
 ###   determinant,dspMatrix,logical-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 ## Only upper triangular part matters (when uplo == "U" as per default)
 (sy2 <- new("dsyMatrix", Dim = as.integer(c(2,2)), x = c(14, NA,32,77)))
 str(t(sy2)) # uplo = "L", and the lower tri. (i.e. NA is replaced).
@@ -2182,12 +2549,15 @@ flush(stderr()); flush(stdout())
 ### Title: Triangular, (compressed) sparse column matrices
 ### Aliases: dtCMatrix-class dtTMatrix-class
 ###   Arith,dtCMatrix,dtCMatrix-method
-### Keywords: classes algebra
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 showClass("dtCMatrix")
-
 showClass("dtTMatrix")
 t1 <- new("dtTMatrix", x= c(3,7), i= 0:1, j=3:2, Dim= as.integer(c(4,4)))
 t1
@@ -2242,15 +2612,15 @@ flush(stderr()); flush(stdout())
 
 ### Name: dtRMatrix-class
 ### Title: Triangular Sparse Compressed Row Matrices
-### Aliases: dtRMatrix-class coerce,dtRMatrix,dgRMatrix-method
-###   coerce,dtRMatrix,dsRMatrix-method coerce,dtRMatrix,dtCMatrix-method
-###   coerce,dtRMatrix,dtTMatrix-method coerce,dtRMatrix,dtpMatrix-method
-###   coerce,dtRMatrix,dtrMatrix-method coerce,dtRMatrix,ltRMatrix-method
-###   coerce,dtRMatrix,ntRMatrix-method coerce,matrix,dtRMatrix-method
-### Keywords: classes algebra
+### Aliases: dtRMatrix-class
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (m0 <- new("dtRMatrix"))
 (m2 <- new("dtRMatrix", Dim = c(2L,2L),
                         x = c(5, 1:2), p = c(0L,2:3), j= c(0:1,1L)))
@@ -2268,10 +2638,14 @@ flush(stderr()); flush(stdout())
 ### Name: dtpMatrix-class
 ### Title: Packed Triangular Dense Matrices - "dtpMatrix"
 ### Aliases: dtpMatrix-class
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 showClass("dtrMatrix")
 
 example("dtrMatrix-class", echo=FALSE)
@@ -2299,10 +2673,14 @@ flush(stderr()); flush(stdout())
 ### Name: dtrMatrix-class
 ### Title: Triangular, dense, numeric matrices
 ### Aliases: dtrMatrix-class
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (m <- rbind(2:3, 0:-1))
 (M <- as(m, "generalMatrix"))
 
@@ -2331,17 +2709,49 @@ nameEx("expand")
 
 flush(stderr()); flush(stdout())
 
-### Name: expand
-### Title: Expand a (Matrix) Decomposition into Factors
-### Aliases: expand expand,CHMfactor-method
-###   expand,MatrixFactorization-method expand,denseLU-method
-###   expand,sparseLU-method
-### Keywords: algebra
+### Name: expand-methods
+### Title: Expand Matrix Factorizations
+### Aliases: expand expand-methods expand1 expand1-methods expand2
+###   expand2-methods expand,CHMfactor-method expand,denseLU-method
+###   expand,sparseLU-method expand1,BunchKaufman-method
+###   expand1,CHMsimpl-method expand1,CHMsuper-method
+###   expand1,Cholesky-method expand1,Schur-method expand1,denseLU-method
+###   expand1,pBunchKaufman-method expand1,pCholesky-method
+###   expand1,sparseLU-method expand1,sparseQR-method
+###   expand2,BunchKaufman-method expand2,CHMsimpl-method
+###   expand2,CHMsuper-method expand2,Cholesky-method expand2,Schur-method
+###   expand2,denseLU-method expand2,pBunchKaufman-method
+###   expand2,pCholesky-method expand2,sparseLU-method
+###   expand2,sparseQR-method
+### Keywords: algebra array methods
 
 ### ** Examples
 
-(x <- Matrix(round(rnorm(9),2), 3, 3))
-(ex <- expand(lux <- lu(x)))
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showMethods("expand1", inherited = FALSE)
+showMethods("expand2", inherited = FALSE)
+set.seed(0)
+
+(A <- Matrix(rnorm(9L, 0, 10), 3L, 3L))
+(lu.A <- lu(A))
+(e.lu.A <- expand2(lu.A))
+stopifnot(exprs = {
+    is.list(e.lu.A)
+    identical(names(e.lu.A), c("P1.", "L", "U"))
+    all(sapply(e.lu.A, is, "Matrix"))
+    all.equal(as(A, "matrix"), as(Reduce(`%*%`, e.lu.A), "matrix"))
+})
+
+## 'expand1' and 'expand2' give equivalent results modulo
+## dimnames and representation of permutation matrices;
+## see also function 'alt' in example("Cholesky-methods")
+(a1 <- sapply(names(e.lu.A), expand1, x = lu.A, simplify = FALSE))
+all.equal(a1, e.lu.A)
+
+## see help("denseLU-class") and others for more examples
 
 
 
@@ -2351,13 +2761,13 @@ nameEx("expm")
 
 flush(stderr()); flush(stdout())
 
-### Name: expm
+### Name: expm-methods
 ### Title: Matrix Exponential
-### Aliases: expm expm,Matrix-method expm,dMatrix-method
+### Aliases: expm expm-methods expm,Matrix-method expm,dMatrix-method
 ###   expm,ddiMatrix-method expm,dgeMatrix-method expm,dspMatrix-method
 ###   expm,dsparseMatrix-method expm,dsyMatrix-method expm,dtpMatrix-method
 ###   expm,dtrMatrix-method expm,matrix-method
-### Keywords: algebra math
+### Keywords: array math methods
 
 ### ** Examples
 
@@ -2381,35 +2791,37 @@ flush(stderr()); flush(stdout())
 ### Title: Read and write external matrix formats
 ### Aliases: readHB readMM writeMM writeMM,CsparseMatrix-method
 ###   writeMM,sparseMatrix-method
-### Keywords: IO array algebra
+### Keywords: connection file methods utilities
 
 ### ** Examples
 
-str(pores <- readMM(system.file("external/pores_1.mtx",
-                                package = "Matrix")))
-str(utm <- readHB(system.file("external/utm300.rua",
-                               package = "Matrix")))
-str(lundA <- readMM(system.file("external/lund_a.mtx",
-                                package = "Matrix")))
-str(lundA <- readHB(system.file("external/lund_a.rsa",
-                                package = "Matrix")))
-str(jgl009 <- ## https://math.nist.gov/MatrixMarket/data/Harwell-Boeing/counterx/counterx.html
-        readMM(system.file("external/jgl009.mtx", package = "Matrix")))
-## Not run: 
-##D ## NOTE: The following examples take quite some time
-##D ## ----  even on a fast internet connection:
-##D if(FALSE) # the URL has been corrected, but we need an un-tar step!
-##D str(sm <-
-##D  readHB(gzcon(url("https://www.cise.ufl.edu/research/sparse/RB/Boeing/msc00726.tar.gz"))))
-## End(Not run)
-data(KNex)
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+str(pores <- readMM(system.file("external/pores_1.mtx", package = "Matrix")))
+str(utm   <- readHB(system.file("external/utm300.rua" , package = "Matrix")))
+str(lundA <- readMM(system.file("external/lund_a.mtx" , package = "Matrix")))
+str(lundA <- readHB(system.file("external/lund_a.rsa" , package = "Matrix")))
+## https://math.nist.gov/MatrixMarket/data/Harwell-Boeing/counterx/counterx.htm
+str(jgl   <- readMM(system.file("external/jgl009.mtx" , package = "Matrix")))
+
+## NOTE: The following examples take quite some time
+## ----  even on a fast internet connection:
+if(FALSE) {
+## The URL has been corrected, but we need an untar step:
+u. <- url("https://www.cise.ufl.edu/research/sparse/RB/Boeing/msc00726.tar.gz")
+str(sm <- readHB(gzcon(u.)))
+}
+
+data(KNex, package = "Matrix")
 ## Store as MatrixMarket (".mtx") file, here inside temporary dir./folder:
 (MMfile <- file.path(tempdir(), "mmMM.mtx"))
 writeMM(KNex$mm, file=MMfile)
 file.info(MMfile)[,c("size", "ctime")] # (some confirmation of the file's)
 
 ## very simple export - in triplet format - to text file:
-data(CAex)
+data(CAex, package = "Matrix")
 s.CA <- summary(CAex)
 s.CA # shows  (i, j, x)  [columns of a data frame]
 message("writing to ", outf <- tempfile())
@@ -2428,19 +2840,29 @@ nameEx("facmul")
 
 flush(stderr()); flush(stdout())
 
-### Name: facmul
-### Title: Multiplication by Decomposition Factors
-### Aliases: facmul facmul.default
-### Keywords: array algebra
+### Name: facmul-methods
+### Title: Multiplication by Factors from Matrix Factorizations
+### Aliases: facmul facmul-methods
+### Keywords: arith array methods
 
 ### ** Examples
 
-library(Matrix)
-x <- Matrix(rnorm(9), 3, 3)
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+## Conceptually, methods for 'facmul' _would_ behave as follows ...
 ## Not run: 
-##D qrx <- qr(x)                      # QR factorization of x
-##D y <- rnorm(3)
-##D facmul( qr(x), factor = "Q", y)   # form Q y
+##D n <- 3L
+##D x <- lu(Matrix(rnorm(n * n), n, n))
+##D y <- rnorm(n)
+##D L <- unname(expand2(x)[[nm <- "L"]])
+##D stopifnot(exprs = {
+##D     all.equal(facmul(x, nm, y, trans = FALSE, left =  TRUE), L %*% y)
+##D     all.equal(facmul(x, nm, y, trans = FALSE, left = FALSE), y %*% L)
+##D     all.equal(facmul(x, nm, y, trans =  TRUE, left =  TRUE),  crossprod(L, y))
+##D     all.equal(facmul(x, nm, y, trans =  TRUE, left = FALSE), tcrossprod(y, L))
+##D })
 ## End(Not run)
 
 
@@ -2453,43 +2875,50 @@ flush(stderr()); flush(stdout())
 
 ### Name: fastMisc
 ### Title: "Low Level" Coercions and Methods
-### Aliases: fastMisc .CR2RC .CR2T .M2diag .M2sym .M2tri .T2CR .dense2g
-###   .dense2kind .dense2m .dense2sparse .dense2v .diag2dense .diag2sparse
-###   .m2dense .m2sparse .sparse2dense .sparse2g .sparse2kind .sparse2m
-###   .sparse2v .tCR2RC .diag.dsC .solve.dgC.chol .solve.dgC.lu
-###   .solve.dgC.qr
+### Aliases: fastMisc .M2kind .M2gen .M2sym .M2tri .M2diag .M2v .M2m
+###   .M2unpacked .M2packed .M2C .M2R .M2T .sparse2dense .diag2dense
+###   .ind2dense .m2dense .dense2sparse .diag2sparse .ind2sparse .m2sparse
+###   .tCRT .CR2RC .CR2T .T2CR .dense2g .dense2kind .dense2m .dense2v
+###   .sparse2g .sparse2kind .sparse2m .sparse2v .tCR2RC .diag.dsC
+###   .solve.dgC.lu .solve.dgC.qr .solve.dgC.chol .updateCHMfactor
+### Keywords: utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 D. <- diag(x = c(1, 1, 2, 3, 5, 8))
 D.0 <- Diagonal(x = c(0, 0, 0, 3, 5, 8))
 S. <- toeplitz(as.double(1:6))
 C. <- new("dgCMatrix", Dim = c(3L, 4L),
           p = c(0L, 1L, 1L, 1L, 3L), i = c(1L, 0L, 2L), x = c(-8, 2, 3))
 
-stopifnot(identical(.M2tri( D.), as(D., "triangularMatrix")),
-          identical(.M2sym( D.), as(D., "symmetricMatrix")),
-          identical(.M2diag(D.), as(D., "diagonalMatrix")),
-          identical(.sparse2kind(C., "l"),
-                    as(C., "lMatrix")),
-          identical(.dense2kind(.sparse2dense(C.), "l"),
-                    as(as(C., "denseMatrix"), "lMatrix")),
-          identical(.diag2sparse(D.0, "ntC"),
-                    .dense2sparse(.diag2dense(D.0, "ntp"), "C")),
-          identical(.dense2g(.diag2dense(D.0, "dsy")),
-                    .sparse2dense(.sparse2g(.diag2sparse(D.0, "dsT")))),
-          identical(S.,
-                    .sparse2m(.m2sparse(S., ".sR"))),
-          identical(S. * lower.tri(S.) + diag(1, 6L),
-                    .dense2m(.m2dense(S., ".tr", "L", "U"))),
-          identical(.CR2RC(C.), .T2CR(.CR2T(C.), FALSE)),
-          identical(.tCR2RC(C.), .CR2RC(t(C.))))
+stopifnot(exprs = {
+    identical(.M2tri (D.), as(D., "triangularMatrix"))
+    identical(.M2sym (D.), as(D.,  "symmetricMatrix"))
+    identical(.M2diag(D.), as(D.,   "diagonalMatrix"))
+    identical(.M2kind(C., "l"),
+              as(C., "lMatrix"))
+    identical(.M2kind(.sparse2dense(C.), "l"),
+              as(as(C., "denseMatrix"), "lMatrix"))
+    identical(.diag2sparse(D.0, "t", "C"),
+              .dense2sparse(.diag2dense(D.0, "t", TRUE), "C"))
+    identical(.M2gen(.diag2dense(D.0, "s", FALSE)),
+              .sparse2dense(.M2gen(.diag2sparse(D.0, "s", "T"))))
+    identical(S.,
+              .M2m(.m2sparse(S., ".sR")))
+    identical(S. * lower.tri(S.) + diag(1, 6L),
+              .M2m(.m2dense (S., ".tr", "L", "U")))
+    identical(.M2R(C.), .M2R(.M2T(C.)))
+    identical(.tCRT(C.), .M2R(t(C.)))
+})
 
 A <- tcrossprod(C.)/6 + Diagonal(3, 1/3); A[1,2] <- 3; A
 stopifnot(exprs = {
     is.numeric( x. <- c(2.2, 0, -1.2) )
-    all.equal(.solve.dgC.lu(A, c(1,0,0), check=FALSE),
-              Matrix(x.))
+    all.equal(x., .solve.dgC.lu(A, c(1,0,0), check=FALSE))
     all.equal(x., .solve.dgC.qr(A, c(1,0,0), check=FALSE))
 })
 
@@ -2513,9 +2942,10 @@ nameEx("forceSymmetric")
 
 flush(stderr()); flush(stdout())
 
-### Name: forceSymmetric
+### Name: forceSymmetric-methods
 ### Title: Force a Matrix to 'symmetricMatrix' Without Symmetry Checks
-### Aliases: forceSymmetric forceSymmetric,CsparseMatrix,character-method
+### Aliases: forceSymmetric forceSymmetric-methods
+###   forceSymmetric,CsparseMatrix,character-method
 ###   forceSymmetric,CsparseMatrix,missing-method
 ###   forceSymmetric,RsparseMatrix,character-method
 ###   forceSymmetric,RsparseMatrix,missing-method
@@ -2531,7 +2961,7 @@ flush(stderr()); flush(stdout())
 ###   forceSymmetric,packedMatrix,missing-method
 ###   forceSymmetric,unpackedMatrix,character-method
 ###   forceSymmetric,unpackedMatrix,missing-method
-### Keywords: array
+### Keywords: array methods
 
 ### ** Examples
 
@@ -2561,7 +2991,7 @@ flush(stderr()); flush(stdout())
 ### Name: formatSparseM
 ### Title: Formatting Sparse Numeric Matrices Utilities
 ### Aliases: formatSparseM .formatSparseSimple
-### Keywords: utilities print
+### Keywords: character print utilities
 
 ### ** Examples
 
@@ -2586,23 +3016,23 @@ nameEx("graph2T")
 
 flush(stderr()); flush(stdout())
 
-### Name: graph-sparseMatrix
+### Name: coerce-methods-graph
 ### Title: Conversions "graph" <-> (sparse) Matrix
-### Aliases: graph2T T2graph coerce,Matrix,graph-method
+### Aliases: coerce-methods-graph coerce,Matrix,graph-method
 ###   coerce,Matrix,graphNEL-method coerce,TsparseMatrix,graphNEL-method
 ###   coerce,graph,CsparseMatrix-method coerce,graph,Matrix-method
 ###   coerce,graph,RsparseMatrix-method coerce,graph,TsparseMatrix-method
 ###   coerce,graph,sparseMatrix-method coerce,graphAM,TsparseMatrix-method
-###   coerce,graphNEL,TsparseMatrix-method
-### Keywords: graph utilities
+###   coerce,graphNEL,TsparseMatrix-method T2graph graph2T
+### Keywords: methods utilities
 
 ### ** Examples
 
-if(isTRUE(try(require(graph)))) { ## super careful .. for "checking reasons"
+if(requireNamespace("graph")) {
   n4 <- LETTERS[1:4]; dns <- list(n4,n4)
   show(a1 <- sparseMatrix(i= c(1:4),   j=c(2:4,1),   x = 2,    dimnames=dns))
   show(g1 <- as(a1, "graph")) # directed
-  unlist(edgeWeights(g1)) # all '2'
+  unlist(graph::edgeWeights(g1)) # all '2'
 
   show(a2 <- sparseMatrix(i= c(1:4,4), j=c(2:4,1:2), x = TRUE, dimnames=dns))
   show(g2 <- as(a2, "graph")) # directed
@@ -2619,11 +3049,12 @@ if(isTRUE(try(require(graph)))) { ## super careful .. for "checking reasons"
    identical(as(m3,"TsparseMatrix"), uniqTsparse(tg3))
   )
 ## End(Don't show)
-  a. <- sparseMatrix(i= 4:1, j=1:4, dimnames=list(n4,n4), giveC=FALSE) # no 'x'
+  a. <- sparseMatrix(i=4:1, j=1:4, dimnames=list(n4, n4), repr="T") # no 'x'
   show(a.) # "ngTMatrix"
   show(g. <- as(a., "graph"))
 ## Don't show: 
-  stopifnot(edgemode(g.) == "undirected", numEdges(g.) == 2,
+  stopifnot(graph::edgemode(g.) == "undirected",
+            graph::numEdges(g.) == 2,
             all.equal(as(g., "TsparseMatrix"),
                       as(a., "symmetricMatrix"))
 )
@@ -2640,20 +3071,25 @@ flush(stderr()); flush(stdout())
 
 ### Name: image-methods
 ### Title: Methods for image() in Package 'Matrix'
-### Aliases: image-methods image,ANY-method image,CHMfactor-method
+### Aliases: image image-methods image,ANY-method image,CHMfactor-method
 ###   image,Matrix-method image,dgTMatrix-method
-### Keywords: methods hplot
+### Keywords: hplot methods
 
 ### ** Examples
 
-showMethods(image)
-## If you want to see all the methods' implementations:
-showMethods(image, incl=TRUE, inherit=FALSE)
 ## Don't show: 
-## warnings should not happen here, notably when print(<trellis>)
+ 
+library(grDevices, pos = "package:base", verbose = FALSE)
+library(    utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showMethods(image)
+## And if you want to see the method definitions:
+showMethods(image, includeDefs = TRUE, inherited = FALSE)
+## Don't show: 
+ 
 op <- options(warn = 2)
 ## End(Don't show)
-data(CAex)
+data(CAex, package = "Matrix")
 image(CAex, main = "image(CAex)") -> imgC; imgC
 stopifnot(!is.null(leg <- imgC$legend), is.list(leg$right)) # failed for 2 days ..
 image(CAex, useAbs=TRUE, main = "image(CAex, useAbs=TRUE)")
@@ -2665,7 +3101,7 @@ print(image(cCA, main="Cholesky(crossprod(CAex), Imult = .01)"),
 print(image(cCA, useAbs=TRUE),
       split=c(x=2,y=1,nx=2,ny=1))
 
-data(USCounties)
+data(USCounties, package = "Matrix")
 image(USCounties)# huge
 image(sign(USCounties))## just the pattern
     # how the result looks, may depend heavily on
@@ -2712,27 +3148,13 @@ flush(stderr()); flush(stdout())
 
 ### Name: indMatrix-class
 ### Title: Index Matrices
-### Aliases: indMatrix-class Summary,indMatrix-method
-###   as.logical,indMatrix-method as.numeric,indMatrix-method
-###   as.vector,indMatrix-method coerce,indMatrix,CsparseMatrix-method
-###   coerce,indMatrix,RsparseMatrix-method
-###   coerce,indMatrix,TsparseMatrix-method coerce,indMatrix,dMatrix-method
-###   coerce,indMatrix,ddenseMatrix-method
-###   coerce,indMatrix,denseMatrix-method
-###   coerce,indMatrix,diagonalMatrix-method
-###   coerce,indMatrix,dsparseMatrix-method
-###   coerce,indMatrix,generalMatrix-method coerce,indMatrix,lMatrix-method
-###   coerce,indMatrix,ldenseMatrix-method
-###   coerce,indMatrix,lsparseMatrix-method coerce,indMatrix,matrix-method
-###   coerce,indMatrix,nMatrix-method coerce,indMatrix,ndenseMatrix-method
-###   coerce,indMatrix,nsparseMatrix-method coerce,indMatrix,pMatrix-method
-###   coerce,indMatrix,packedMatrix-method
-###   coerce,indMatrix,unpackedMatrix-method coerce,indMatrix,vector-method
-###   coerce,integer,indMatrix-method coerce,list,indMatrix-method
+### Aliases: indMatrix-class -,indMatrix,missing-method
+###   Summary,indMatrix-method coerce,indMatrix,pMatrix-method
+###   coerce,indMatrix,sparseVector-method coerce,list,indMatrix-method
 ###   coerce,matrix,indMatrix-method coerce,numeric,indMatrix-method
-###   diag,indMatrix-method diag<-,indMatrix-method
-###   rbind2,indMatrix,indMatrix-method t,indMatrix-method
-### Keywords: classes
+###   determinant,indMatrix,logical-method diag,indMatrix-method
+###   diag<-,indMatrix-method t,indMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
@@ -2799,25 +3221,46 @@ nameEx("invPerm")
 
 flush(stderr()); flush(stdout())
 
-### Name: invPerm
-### Title: Inverse Permutation Vector
-### Aliases: invPerm
-### Keywords: arithmetic
+### Name: invertPerm
+### Title: Utilities for Permutation Vectors
+### Aliases: invertPerm signPerm isPerm asPerm invPerm
+### Keywords: utilities
 
 ### ** Examples
 
-  p <- sample(10) # a random permutation vector
-  ip <- invPerm(p)
-  p[ip] # == 1:10
-  ## they are indeed inverse of each other:
-  stopifnot(
-    identical(p[ip], 1:10),
-    identical(ip[p], 1:10),
-    identical(invPerm(ip), p)
-  )
+p <- sample(10L) # a random permutation vector
+ip <- invertPerm(p)
+s <- signPerm(p)
+
+## 'p' and 'ip' are indeed inverses:
+stopifnot(exprs = {
+    isPerm(p)
+    isPerm(ip)
+    identical(s, 1L) || identical(s, -1L)
+    identical(s, signPerm(ip))
+    identical(p[ip], 1:10)
+    identical(ip[p], 1:10)
+    identical(invertPerm(ip), p)
+})
+
+## Product of transpositions (1 2)(2 1)(4 3)(6 8)(10 1) = (3 4)(6 8)(1 10)
+pivot <- c(2L, 1L, 3L, 3L, 5L, 8L, 7L, 8L, 9L, 1L)
+q <- asPerm(pivot)
+stopifnot(exprs = {
+    identical(q, c(10L, 2L, 4L, 3L, 5L, 8L, 7L, 6L, 9L, 1L))
+    identical(q[q], seq_len(10L)) # because the permutation is odd:
+    signPerm(q) == -1L
+})
+
+invPerm # a less general version of 'invertPerm'
 ## Don't show: 
- p3 <- c(3, 1:2) # ('double' instead of integer)
- stopifnot(identical(invPerm(p3), c(2:3, 1L)))
+stopifnot(exprs = {
+    identical(isPerm(0L), FALSE)
+    identical(signPerm(1:2),  1L)
+    identical(signPerm(2:1), -1L)
+    identical(invertPerm(c(3, 1:2)), c(2:3, 1L)) # 'p' of type "double",
+    tryCatch(invPerm(NA), error = function(e) TRUE) # was a segfault
+})
 ## End(Don't show)
 
 
@@ -2830,12 +3273,13 @@ flush(stderr()); flush(stdout())
 
 ### Name: is.na-methods
 ### Title: is.na(), is.finite() Methods for 'Matrix' Objects
-### Aliases: is.na-methods is.nan-methods is.finite-methods
-###   is.infinite-methods anyNA-methods is.na,abIndex-method
-###   is.na,dgeMatrix-method is.na,diagonalMatrix-method
-###   is.na,dspMatrix-method is.na,dsparseMatrix-method
-###   is.na,dsyMatrix-method is.na,dtpMatrix-method is.na,dtrMatrix-method
-###   is.na,indMatrix-method is.na,lgeMatrix-method is.na,lspMatrix-method
+### Aliases: is.na is.na-methods is.nan is.nan-methods is.finite
+###   is.finite-methods is.infinite is.infinite-methods anyNA anyNA-methods
+###   is.na,abIndex-method is.na,dgeMatrix-method
+###   is.na,diagonalMatrix-method is.na,dspMatrix-method
+###   is.na,dsparseMatrix-method is.na,dsyMatrix-method
+###   is.na,dtpMatrix-method is.na,dtrMatrix-method is.na,indMatrix-method
+###   is.na,lgeMatrix-method is.na,lspMatrix-method
 ###   is.na,lsparseMatrix-method is.na,lsyMatrix-method
 ###   is.na,ltpMatrix-method is.na,ltrMatrix-method is.na,nMatrix-method
 ###   is.na,nsparseVector-method is.na,sparseVector-method
@@ -2865,7 +3309,7 @@ flush(stderr()); flush(stdout())
 ###   anyNA,ldenseMatrix-method anyNA,lsparseMatrix-method
 ###   anyNA,nMatrix-method anyNA,nsparseVector-method
 ###   anyNA,sparseVector-method
-### Keywords: methods
+### Keywords: NA math programming methods
 
 ### ** Examples
 
@@ -2896,35 +3340,40 @@ flush(stderr()); flush(stdout())
 ### Name: is.null.DN
 ### Title: Are the Dimnames 'dn' NULL-like ?
 ### Aliases: is.null.DN
-### Keywords: utilities
+### Keywords: array attribute programming utilities
 
 ### ** Examples
 
-m <- matrix(round(100 * rnorm(6)), 2,3); m1 <- m2 <- m3 <- m4 <- m
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+m1 <- m2 <- m3 <- m4 <- m <-
+    matrix(round(100 * rnorm(6)), 2, 3)
 dimnames(m1) <- list(NULL, NULL)
 dimnames(m2) <- list(NULL, character())
 dimnames(m3) <- rev(dimnames(m2))
 dimnames(m4) <- rep(list(character()),2)
 
-m4 ## prints absolutely identically to  m
+m4 # prints absolutely identically to m
 
-stopifnot(m == m1, m1 == m2, m2 == m3, m3 == m4,
-	  identical(capture.output(m) -> cm,
-		    capture.output(m1)),
-	  identical(cm, capture.output(m2)),
-	  identical(cm, capture.output(m3)),
-	  identical(cm, capture.output(m4)))
-
-hasNoDimnames <- function(.) is.null.DN(dimnames(.))
-
+c.o <- capture.output
+cm <- c.o(m)
 stopifnot(exprs = {
-  hasNoDimnames(m)
-  hasNoDimnames(m1); hasNoDimnames(m2)
-  hasNoDimnames(m3); hasNoDimnames(m4)
-  hasNoDimnames(Matrix(m) -> M)
-  hasNoDimnames(as(M, "sparseMatrix"))
+    m == m1; m == m2; m == m3; m == m4
+	identical(cm, c.o(m1));	identical(cm, c.o(m2))
+	identical(cm, c.o(m3)); identical(cm, c.o(m4))
 })
 
+hasNoDimnames <- function(.) is.null.DN(dimnames(.))
+stopifnot(exprs = {
+    hasNoDimnames(m)
+    hasNoDimnames(m1); hasNoDimnames(m2)
+    hasNoDimnames(m3); hasNoDimnames(m4)
+    hasNoDimnames(Matrix(m) -> M)
+    hasNoDimnames(as(M, "sparseMatrix"))
+})
 
 
 
@@ -2936,8 +3385,9 @@ flush(stderr()); flush(stdout())
 
 ### Name: isSymmetric-methods
 ### Title: Methods for Function 'isSymmetric' in Package 'Matrix'
-### Aliases: isSymmetric-methods isSymmetric,diagonalMatrix-method
-###   isSymmetric,indMatrix-method isSymmetric,symmetricMatrix-method
+### Aliases: isSymmetric isSymmetric-methods
+###   isSymmetric,diagonalMatrix-method isSymmetric,indMatrix-method
+###   isSymmetric,symmetricMatrix-method
 ###   isSymmetric,triangularMatrix-method isSymmetric,dgCMatrix-method
 ###   isSymmetric,dgRMatrix-method isSymmetric,dgTMatrix-method
 ###   isSymmetric,dgeMatrix-method isSymmetric,lgCMatrix-method
@@ -2947,7 +3397,7 @@ flush(stderr()); flush(stdout())
 ###   isSymmetric,ngeMatrix-method isSymmetric,dtCMatrix-method
 ###   isSymmetric,dtRMatrix-method isSymmetric,dtTMatrix-method
 ###   isSymmetric,dtpMatrix-method isSymmetric,dtrMatrix-method
-### Keywords: methods
+### Keywords: array programming methods
 
 ### ** Examples
 
@@ -2968,7 +3418,7 @@ nameEx("isTriangular")
 
 flush(stderr()); flush(stdout())
 
-### Name: isTriangular
+### Name: isTriangular-methods
 ### Title: Test whether a Matrix is Triangular or Diagonal
 ### Aliases: isTriangular isTriangular-methods isDiagonal
 ###   isDiagonal-methods isTriangular,diagonalMatrix-method
@@ -2985,7 +3435,7 @@ flush(stderr()); flush(stdout())
 ###   isTriangular,lgeMatrix-method isTriangular,ngCMatrix-method
 ###   isTriangular,ngRMatrix-method isTriangular,ngTMatrix-method
 ###   isTriangular,ngeMatrix-method
-### Keywords: methods
+### Keywords: array programming methods
 
 ### ** Examples
 
@@ -3012,7 +3462,8 @@ flush(stderr()); flush(stdout())
 
 ### Name: kronecker-methods
 ### Title: Methods for Function 'kronecker()' in Package 'Matrix'
-### Aliases: kronecker-methods kronecker,CsparseMatrix,CsparseMatrix-method
+### Aliases: kronecker kronecker-methods
+###   kronecker,CsparseMatrix,CsparseMatrix-method
 ###   kronecker,CsparseMatrix,Matrix-method
 ###   kronecker,CsparseMatrix,diagonalMatrix-method
 ###   kronecker,Matrix,matrix-method kronecker,Matrix,vector-method
@@ -3034,7 +3485,7 @@ flush(stderr()); flush(stdout())
 ###   kronecker,indMatrix,diagonalMatrix-method
 ###   kronecker,indMatrix,indMatrix-method kronecker,matrix,Matrix-method
 ###   kronecker,vector,Matrix-method
-### Keywords: methods array
+### Keywords: algebra arith array methods methods array
 
 ### ** Examples
 
@@ -3069,9 +3520,9 @@ flush(stderr()); flush(stdout())
 ###   Logic,ldenseMatrix,lsparseMatrix-method
 ###   Ops,ldenseMatrix,ldenseMatrix-method Summary,ldenseMatrix-method
 ###   ^,ldenseMatrix,ddiMatrix-method ^,ldenseMatrix,ldiMatrix-method
-###   coerce,matrix,ldenseMatrix-method coerce,numLike,ldenseMatrix-method
+###   coerce,matrix,ldenseMatrix-method coerce,vector,ldenseMatrix-method
 ###   which,ldenseMatrix-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
@@ -3107,15 +3558,15 @@ flush(stderr()); flush(stdout())
 ###   Ops,ldiMatrix,ddiMatrix-method Ops,ldiMatrix,ldiMatrix-method
 ###   Ops,ldiMatrix,logical-method Ops,ldiMatrix,numeric-method
 ###   Ops,ldiMatrix,sparseMatrix-method Summary,ldiMatrix-method
-###   as.logical,ldiMatrix-method cbind2,ldiMatrix,atomicVector-method
-###   cbind2,ldiMatrix,matrix-method cbind2,matrix,ldiMatrix-method
-###   prod,ldiMatrix-method rbind2,ldiMatrix,atomicVector-method
-###   rbind2,ldiMatrix,matrix-method rbind2,matrix,ldiMatrix-method
-###   sum,ldiMatrix-method which,ldiMatrix-method
-### Keywords: classes
+###   prod,ldiMatrix-method sum,ldiMatrix-method which,ldiMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (lM <- Diagonal(x = c(TRUE,FALSE,FALSE)))
 str(lM)#> gory details (slots)
 
@@ -3135,12 +3586,16 @@ flush(stderr()); flush(stdout())
 ### Title: Class "lgeMatrix" of General Dense Logical Matrices
 ### Aliases: lgeMatrix-class !,lgeMatrix-method
 ###   Arith,lgeMatrix,lgeMatrix-method Compare,lgeMatrix,lgeMatrix-method
-###   Logic,lgeMatrix,lgeMatrix-method as.vector,lgeMatrix-method
-###   coerce,lgeMatrix,matrix-method coerce,lgeMatrix,vector-method
-### Keywords: classes
+###   Logic,lgeMatrix,lgeMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 showClass("lgeMatrix")
 str(new("lgeMatrix"))
 set.seed(1)
@@ -3167,30 +3622,26 @@ flush(stderr()); flush(stdout())
 ###   Logic,lsparseMatrix,lsparseMatrix-method
 ###   Ops,lsparseMatrix,lsparseMatrix-method
 ###   Ops,lsparseMatrix,nsparseMatrix-method
-###   as.logical,lsparseMatrix-method as.numeric,lsparseMatrix-method
-###   coerce,lsparseMatrix,dMatrix-method
-###   coerce,lsparseMatrix,dsparseMatrix-method
-###   coerce,lsparseMatrix,nMatrix-method
-###   coerce,lsparseMatrix,nsparseMatrix-method
-###   coerce,matrix,lsparseMatrix-method
-###   coerce,numLike,lsparseMatrix-method which,lsparseMatrix-method
-###   Arith,lgCMatrix,lgCMatrix-method Logic,lgCMatrix,lgCMatrix-method
-###   Arith,lgTMatrix,lgTMatrix-method Logic,lgTMatrix,lgTMatrix-method
-###   which,lgTMatrix-method Logic,ltCMatrix,ltCMatrix-method
-###   which,ltTMatrix-method Logic,lsCMatrix,lsCMatrix-method
-###   coerce,lsCMatrix,RsparseMatrix-method
-###   coerce,lsRMatrix,CsparseMatrix-method which,lsTMatrix-method
-### Keywords: classes algebra
+###   coerce,matrix,lsparseMatrix-method coerce,vector,lsparseMatrix-method
+###   which,lsparseMatrix-method Arith,lgCMatrix,lgCMatrix-method
+###   Logic,lgCMatrix,lgCMatrix-method Arith,lgTMatrix,lgTMatrix-method
+###   Logic,lgTMatrix,lgTMatrix-method Logic,ltCMatrix,ltCMatrix-method
+###   Logic,lsCMatrix,lsCMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (m <- Matrix(c(0,0,2:0), 3,5, dimnames=list(LETTERS[1:3],NULL)))
 (lm <- (m > 1)) # lgC
 !lm     # no longer sparse
 stopifnot(is(lm,"lsparseMatrix"),
           identical(!lm, m <= 1))
 
-data(KNex)
+data(KNex, package = "Matrix")
 str(mmG.1 <- (KNex $ mm) > 0.1)# "lgC..."
 table(mmG.1@x)# however with many ``non-structural zeros''
 ## from logical to nz_pattern -- okay when there are no NA's :
@@ -3224,10 +3675,14 @@ flush(stderr()); flush(stdout())
 ### Title: Symmetric Dense Logical Matrices
 ### Aliases: lsyMatrix-class lspMatrix-class !,lsyMatrix-method
 ###   !,lspMatrix-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (M2 <- Matrix(c(TRUE, NA, FALSE, FALSE), 2, 2)) # logical dense (ltr)
 str(M2)
 # can
@@ -3247,10 +3702,14 @@ flush(stderr()); flush(stdout())
 ### Title: Triangular Dense Logical Matrices
 ### Aliases: ltrMatrix-class ltpMatrix-class !,ltrMatrix-method
 ###   !,ltpMatrix-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 showClass("ltrMatrix")
 
 str(new("ltpMatrix"))
@@ -3268,39 +3727,48 @@ nameEx("lu")
 
 flush(stderr()); flush(stdout())
 
-### Name: lu
-### Title: (Generalized) Triangular Decomposition of a Matrix
-### Aliases: lu lu,denseMatrix-method lu,diagonalMatrix-method
+### Name: lu-methods
+### Title: Methods for LU Factorization
+### Aliases: lu lu-methods lu,denseMatrix-method lu,diagonalMatrix-method
 ###   lu,dgCMatrix-method lu,dgRMatrix-method lu,dgTMatrix-method
 ###   lu,dgeMatrix-method lu,dsCMatrix-method lu,dsRMatrix-method
 ###   lu,dsTMatrix-method lu,dspMatrix-method lu,dsyMatrix-method
 ###   lu,dtCMatrix-method lu,dtRMatrix-method lu,dtTMatrix-method
 ###   lu,dtpMatrix-method lu,dtrMatrix-method lu,matrix-method
 ###   lu,sparseMatrix-method
-### Keywords: array algebra
+### Keywords: algebra array methods
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showMethods("lu", inherited = FALSE)
+set.seed(0)
 
-##--- Dense  -------------------------
-x <- Matrix(rnorm(9), 3, 3)
-lu(x)
-dim(x2 <- round(10 * x[,-3]))# non-square
-expand(lu2 <- lu(x2))
+## ---- Dense ----------------------------------------------------------
 
-##--- Sparse (see more in ?"sparseLU-class")----- % ./sparseLU-class.Rd
+(A1 <- Matrix(rnorm(9L), 3L, 3L))
+(lu.A1 <- lu(A1))
 
-pm <- as(readMM(system.file("external/pores_1.mtx",
-                            package = "Matrix")),
+(A2 <- round(10 * A1[, -3L]))
+(lu.A2 <- lu(A2))
+
+## A ~ P1' L U in floating point
+str(e.lu.A2 <- expand2(lu.A2), max.level = 2L)
+stopifnot(all.equal(A2, Reduce(`%*%`, e.lu.A2)))
+
+## ---- Sparse ---------------------------------------------------------
+
+A3 <- as(readMM(system.file("external/pores_1.mtx", package = "Matrix")),
          "CsparseMatrix")
-str(pmLU <- lu(pm))		# p is a 0-based permutation of the rows
-                                # q is a 0-based permutation of the columns
-## permute rows and columns of original matrix
-ppm <- pm[pmLU@p + 1L, pmLU@q + 1L]
-pLU <- drop0(pmLU@L %*% pmLU@U) # L %*% U -- dropping extra zeros
-## equal up to "rounding"
-ppm[1:14, 1:5]
-pLU[1:14, 1:5]
+(lu.A3 <- lu(A3))
+
+## A ~ P1' L U P2' in floating point
+str(e.lu.A3 <- expand2(lu.A3), max.level = 2L)
+stopifnot(all.equal(A3, Reduce(`%*%`, e.lu.A3)))
 
 
 
@@ -3313,18 +3781,15 @@ flush(stderr()); flush(stdout())
 ### Name: mat2triplet
 ### Title: Map Matrix to its Triplet Representation
 ### Aliases: mat2triplet
-### Keywords: classes manip utilities
+### Keywords: array utilities
 
 ### ** Examples
 
-if(FALSE) ## The function is defined (don't redefine here!), simply as
-mat2triplet <- function(x, uniqT = FALSE) {
-    T <- as(x, "TsparseMatrix")
-    if(uniqT && anyDuplicatedT(T)) T <- .uniqTsparse(T)
-    if(is(T, "nsparseMatrix"))
-         list(i = T@i + 1L, j = T@j + 1L)
-    else list(i = T@i + 1L, j = T@j + 1L, x = T@x)
-}
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+mat2triplet # simple definition
 
 i <- c(1,3:8); j <- c(2,9,6:10); x <- 7 * (1:7)
 (Ax <- sparseMatrix(i, j, x = x)) ##  8 x 10 "dgCMatrix"
@@ -3343,11 +3808,11 @@ nameEx("matrix-products")
 
 flush(stderr()); flush(stdout())
 
-### Name: matrix-products
+### Name: matmult-methods
 ### Title: Matrix (Cross) Products (of Transpose)
-### Aliases: %*%-methods crossprod-methods tcrossprod-methods %*% crossprod
-###   tcrossprod %*%,ANY,Matrix-method %*%,ANY,TsparseMatrix-method
-###   %*%,CsparseMatrix,CsparseMatrix-method
+### Aliases: %*% %*%-methods crossprod crossprod-methods tcrossprod
+###   tcrossprod-methods matmult-methods %*%,ANY,Matrix-method
+###   %*%,ANY,TsparseMatrix-method %*%,CsparseMatrix,CsparseMatrix-method
 ###   %*%,CsparseMatrix,ddenseMatrix-method
 ###   %*%,CsparseMatrix,diagonalMatrix-method
 ###   %*%,CsparseMatrix,matrix-method %*%,CsparseMatrix,numLike-method
@@ -3402,11 +3867,13 @@ flush(stderr()); flush(stdout())
 ###   %*%,nsparseMatrix,ndenseMatrix-method
 ###   %*%,nsparseMatrix,nsparseMatrix-method
 ###   %*%,numLike,CsparseMatrix-method %*%,numLike,Matrix-method
-###   %*%,numLike,sparseVector-method %*%,pMatrix,pMatrix-method
-###   %*%,sparseMatrix,matrix-method %*%,sparseVector,mMatrix-method
-###   %*%,sparseVector,numLike-method %*%,sparseVector,sparseVector-method
-###   crossprod,ANY,ANY-method crossprod,ANY,Matrix-method
-###   crossprod,ANY,RsparseMatrix-method crossprod,ANY,TsparseMatrix-method
+###   %*%,numLike,sparseVector-method %*%,pMatrix,Matrix-method
+###   %*%,pMatrix,indMatrix-method %*%,pMatrix,matrix-method
+###   %*%,pMatrix,pMatrix-method %*%,sparseMatrix,matrix-method
+###   %*%,sparseVector,mMatrix-method %*%,sparseVector,numLike-method
+###   %*%,sparseVector,sparseVector-method crossprod,ANY,ANY-method
+###   crossprod,ANY,Matrix-method crossprod,ANY,RsparseMatrix-method
+###   crossprod,ANY,TsparseMatrix-method
 ###   crossprod,CsparseMatrix,CsparseMatrix-method
 ###   crossprod,CsparseMatrix,ddenseMatrix-method
 ###   crossprod,CsparseMatrix,diagonalMatrix-method
@@ -3451,7 +3918,6 @@ flush(stderr()); flush(stdout())
 ###   crossprod,dtrMatrix,ddenseMatrix-method
 ###   crossprod,dtrMatrix,dtrMatrix-method
 ###   crossprod,dtrMatrix,matrix-method crossprod,indMatrix,Matrix-method
-###   crossprod,indMatrix,indMatrix-method
 ###   crossprod,indMatrix,matrix-method crossprod,indMatrix,missing-method
 ###   crossprod,ldenseMatrix,ddenseMatrix-method
 ###   crossprod,ldenseMatrix,ldenseMatrix-method
@@ -3478,9 +3944,8 @@ flush(stderr()); flush(stdout())
 ###   crossprod,nsparseMatrix,nsparseMatrix-method
 ###   crossprod,numLike,CsparseMatrix-method
 ###   crossprod,numLike,Matrix-method crossprod,numLike,dgeMatrix-method
-###   crossprod,numLike,sparseVector-method crossprod,pMatrix,Matrix-method
-###   crossprod,pMatrix,indMatrix-method crossprod,pMatrix,matrix-method
-###   crossprod,pMatrix,missing-method crossprod,pMatrix,pMatrix-method
+###   crossprod,numLike,sparseVector-method
+###   crossprod,pMatrix,missing-method
 ###   crossprod,sparseVector,mMatrix-method
 ###   crossprod,sparseVector,missing-method
 ###   crossprod,sparseVector,numLike-method
@@ -3501,7 +3966,6 @@ flush(stderr()); flush(stdout())
 ###   tcrossprod,Matrix,TsparseMatrix-method
 ###   tcrossprod,Matrix,indMatrix-method tcrossprod,Matrix,matrix-method
 ###   tcrossprod,Matrix,missing-method tcrossprod,Matrix,numLike-method
-###   tcrossprod,Matrix,pMatrix-method
 ###   tcrossprod,Matrix,symmetricMatrix-method
 ###   tcrossprod,RsparseMatrix,ANY-method
 ###   tcrossprod,RsparseMatrix,diagonalMatrix-method
@@ -3534,11 +3998,8 @@ flush(stderr()); flush(stdout())
 ###   tcrossprod,diagonalMatrix,matrix-method
 ###   tcrossprod,diagonalMatrix,missing-method
 ###   tcrossprod,dtrMatrix,dtrMatrix-method
-###   tcrossprod,indMatrix,Matrix-method
-###   tcrossprod,indMatrix,indMatrix-method
-###   tcrossprod,indMatrix,matrix-method
+###   tcrossprod,indMatrix,Matrix-method tcrossprod,indMatrix,matrix-method
 ###   tcrossprod,indMatrix,missing-method
-###   tcrossprod,indMatrix,pMatrix-method
 ###   tcrossprod,ldenseMatrix,ddenseMatrix-method
 ###   tcrossprod,ldenseMatrix,ldenseMatrix-method
 ###   tcrossprod,ldenseMatrix,matrix-method
@@ -3551,7 +4012,7 @@ flush(stderr()); flush(stdout())
 ###   tcrossprod,matrix,diagonalMatrix-method
 ###   tcrossprod,matrix,dsCMatrix-method tcrossprod,matrix,dtrMatrix-method
 ###   tcrossprod,matrix,indMatrix-method tcrossprod,matrix,lsCMatrix-method
-###   tcrossprod,matrix,nsCMatrix-method tcrossprod,matrix,pMatrix-method
+###   tcrossprod,matrix,nsCMatrix-method
 ###   tcrossprod,ndenseMatrix,ddenseMatrix-method
 ###   tcrossprod,ndenseMatrix,ldenseMatrix-method
 ###   tcrossprod,ndenseMatrix,matrix-method
@@ -3560,17 +4021,23 @@ flush(stderr()); flush(stdout())
 ###   tcrossprod,numLike,CsparseMatrix-method
 ###   tcrossprod,numLike,Matrix-method tcrossprod,numLike,dgeMatrix-method
 ###   tcrossprod,numLike,sparseVector-method
-###   tcrossprod,pMatrix,missing-method tcrossprod,pMatrix,pMatrix-method
+###   tcrossprod,pMatrix,Matrix-method tcrossprod,pMatrix,matrix-method
+###   tcrossprod,pMatrix,missing-method
 ###   tcrossprod,sparseMatrix,sparseVector-method
 ###   tcrossprod,sparseVector,mMatrix-method
 ###   tcrossprod,sparseVector,missing-method
 ###   tcrossprod,sparseVector,numLike-method
 ###   tcrossprod,sparseVector,sparseMatrix-method
 ###   tcrossprod,sparseVector,sparseVector-method
-### Keywords: methods algebra
+### Keywords: algebra arith array
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
  ## A random sparse "incidence" matrix :
  m <- matrix(0, 400, 500)
  set.seed(12)
@@ -3610,8 +4077,8 @@ flush(stderr()); flush(stdout())
 ###   Ops,nMatrix,lMatrix-method Ops,nMatrix,nMatrix-method
 ###   Ops,nMatrix,numeric-method Ops,numeric,nMatrix-method
 ###   Summary,nMatrix-method coerce,matrix,nMatrix-method
-###   coerce,numLike,nMatrix-method
-### Keywords: classes algebra
+###   coerce,vector,nMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
@@ -3639,8 +4106,8 @@ flush(stderr()); flush(stdout())
 ###   *,ndenseMatrix,ldiMatrix-method Ops,ndenseMatrix,ndenseMatrix-method
 ###   Summary,ndenseMatrix-method ^,ndenseMatrix,ddiMatrix-method
 ###   ^,ndenseMatrix,ldiMatrix-method coerce,matrix,ndenseMatrix-method
-###   coerce,numLike,ndenseMatrix-method which,ndenseMatrix-method
-### Keywords: classes
+###   coerce,vector,ndenseMatrix-method which,ndenseMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
@@ -3659,10 +4126,17 @@ flush(stderr()); flush(stdout())
 ### Name: nearPD
 ### Title: Nearest Positive Definite Matrix
 ### Aliases: nearPD
-### Keywords: algebra array
+### Keywords: algebra array utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(    stats, pos = "package:base", verbose = FALSE)
+library( graphics, pos = "package:base", verbose = FALSE)
+library(grDevices, pos = "package:base", verbose = FALSE)
+library(    utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
  ## Higham(2002), p.334f - simple example
  A <- matrix(1, 3,3); A[1,3] <- A[3,1] <- 0
  n.A <- nearPD(A, corr=TRUE, do2eigen=FALSE)
@@ -3683,8 +4157,8 @@ flush(stderr()); flush(stdout())
  round(near.m$mat, 2)
  norm(m - near.m$mat) # 1.102 / 1.08
 
- if(require("sfsmisc")) {
-    m2 <- posdefify(m) # a simpler approach
+ if(requireNamespace("sfsmisc")) {
+    m2 <- sfsmisc::posdefify(m) # a simpler approach
     norm(m - m2)  # 1.185, i.e., slightly "less near"
  }
 
@@ -3728,12 +4202,12 @@ summary(EV) ## looking more closely {EV sorted decreasingly}:
 tail(EV)# all 6 are negative
 EV2 <- eigen(sWpos <- nearPD(symW)$mat, only=TRUE)$values
 stopifnot(EV2 > 0)
-if(require("sfsmisc")) {
-       plot(pmax(1e-3,EV), EV2, type="o", log="xy", xaxt="n",yaxt="n")
-       eaxis(1); eaxis(2)
-} else plot(pmax(1e-3,EV), EV2, type="o", log="xy")
-abline(0,1, col="red3",lty=2)
-
+if(requireNamespace("sfsmisc")) {
+    plot(pmax(1e-3,EV), EV2, type="o", log="xy", xaxt="n", yaxt="n")
+    for(side in 1:2) sfsmisc::eaxis(side)
+} else
+    plot(pmax(1e-3,EV), EV2, type="o", log="xy")
+abline(0, 1, col="red3", lty=2)
 
 
 
@@ -3747,9 +4221,8 @@ flush(stderr()); flush(stdout())
 ### Title: Class "ngeMatrix" of General Dense Nonzero-pattern Matrices
 ### Aliases: ngeMatrix-class !,ngeMatrix-method
 ###   Arith,ngeMatrix,ngeMatrix-method Compare,ngeMatrix,ngeMatrix-method
-###   Logic,ngeMatrix,ngeMatrix-method as.vector,ngeMatrix-method
-###   coerce,ngeMatrix,matrix-method coerce,ngeMatrix,vector-method
-### Keywords: classes
+###   Logic,ngeMatrix,ngeMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
@@ -3764,16 +4237,20 @@ nameEx("nnzero")
 
 flush(stderr()); flush(stdout())
 
-### Name: nnzero
+### Name: nnzero-methods
 ### Title: The Number of Non-Zero Values of a Matrix
-### Aliases: nnzero nnzero,ANY-method nnzero,CHMfactor-method
-###   nnzero,array-method nnzero,denseMatrix-method
+### Aliases: nnzero nnzero-methods nnzero,ANY-method
+###   nnzero,CHMfactor-method nnzero,array-method nnzero,denseMatrix-method
 ###   nnzero,diagonalMatrix-method nnzero,indMatrix-method
 ###   nnzero,sparseMatrix-method nnzero,vector-method
-### Keywords: attribute
+### Keywords: array logic methods
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 m <- Matrix(0+1:28, nrow = 4)
 m[-3,c(2,4:5,7)] <- m[ 3, 1:4] <- m[1:3, 6] <- 0
 (mT <- as(m, "TsparseMatrix"))
@@ -3783,7 +4260,7 @@ nnzero(S)
 str(S) # slots are smaller than nnzero()
 stopifnot(nnzero(S) == sum(as.matrix(S) != 0))# failed earlier
 
-data(KNex)
+data(KNex, package = "Matrix")
 M <- KNex$mm
 class(M)
 dim(M)
@@ -3800,14 +4277,15 @@ nameEx("norm")
 
 flush(stderr()); flush(stdout())
 
-### Name: norm
+### Name: norm-methods
 ### Title: Matrix Norms
-### Aliases: norm norm,ANY,missing-method norm,denseMatrix,character-method
-###   norm,dgeMatrix,character-method norm,diagonalMatrix,character-method
-###   norm,dspMatrix,character-method norm,dsyMatrix,character-method
-###   norm,dtpMatrix,character-method norm,dtrMatrix,character-method
-###   norm,sparseMatrix,character-method
-### Keywords: algebra
+### Aliases: norm norm-methods norm,ANY,missing-method
+###   norm,denseMatrix,character-method norm,dgeMatrix,character-method
+###   norm,diagonalMatrix,character-method norm,dspMatrix,character-method
+###   norm,dsyMatrix,character-method norm,dtpMatrix,character-method
+###   norm,dtrMatrix,character-method norm,indMatrix,character-method
+###   norm,pMatrix,character-method norm,sparseMatrix,character-method
+### Keywords: algebra math methods
 
 ### ** Examples
 
@@ -3854,22 +4332,19 @@ flush(stderr()); flush(stdout())
 ###   Arith,nsparseMatrix,lsparseMatrix-method
 ###   Ops,nsparseMatrix,dsparseMatrix-method
 ###   Ops,nsparseMatrix,lsparseMatrix-method
-###   Ops,nsparseMatrix,sparseMatrix-method as.logical,nsparseMatrix-method
-###   as.numeric,nsparseMatrix-method coerce,matrix,nsparseMatrix-method
-###   coerce,nsparseMatrix,dMatrix-method
-###   coerce,nsparseMatrix,dsparseMatrix-method
+###   Ops,nsparseMatrix,sparseMatrix-method
+###   coerce,matrix,nsparseMatrix-method
 ###   coerce,nsparseMatrix,indMatrix-method
-###   coerce,nsparseMatrix,lMatrix-method
-###   coerce,nsparseMatrix,lsparseMatrix-method
 ###   coerce,nsparseMatrix,pMatrix-method
-###   coerce,numLike,nsparseMatrix-method which,nsparseMatrix-method
-###   which,ngTMatrix-method which,ntTMatrix-method
-###   coerce,nsCMatrix,RsparseMatrix-method
-###   coerce,nsRMatrix,CsparseMatrix-method which,nsTMatrix-method
-### Keywords: classes algebra
+###   coerce,vector,nsparseMatrix-method which,nsparseMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (m <- Matrix(c(0,0,2:0), 3,5, dimnames=list(LETTERS[1:3],NULL)))
 ## ``extract the nonzero-pattern of (m) into an nMatrix'':
 nm <- as(m, "nsparseMatrix") ## -> will be a "ngCMatrix"
@@ -3885,7 +4360,7 @@ nnm@x[2:4] <- c(FALSE, NA, NA)
 nnm
 as(nnm, "nMatrix") # NAs *and* non-structural 0  |--->  'TRUE'
 
-data(KNex)
+data(KNex, package = "Matrix")
 nmm <- as(KNex $ mm, "nMatrix")
 str(xlx <- crossprod(nmm))# "nsCMatrix"
 stopifnot(isSymmetric(xlx))
@@ -3903,17 +4378,21 @@ flush(stderr()); flush(stdout())
 ### Title: Symmetric Dense Nonzero-Pattern Matrices
 ### Aliases: nsyMatrix-class nspMatrix-class !,nsyMatrix-method
 ###   !,nspMatrix-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (s0 <- new("nsyMatrix"))
 
 (M2 <- Matrix(c(TRUE, NA, FALSE, FALSE), 2, 2)) # logical dense (ltr)
-(sM <- M2 & t(M2)) # "lge"
-class(sM <- as(sM, "nMatrix"))         # -> "nge"
-     (sM <- as(sM, "symmetricMatrix")) # -> "nsy"
-str  (sM <- as(sM, "packedMatrix"))    # -> "nsp": packed symmetric
+(sM <- M2 & t(M2))                       # -> "lge"
+class(sM <- as(sM, "nMatrix"))           # -> "nge"
+     (sM <- as(sM, "symmetricMatrix"))   # -> "nsy"
+str(sM <- as(sM, "packedMatrix")) # -> "nsp", i.e., packed symmetric
 
 
 
@@ -3927,10 +4406,14 @@ flush(stderr()); flush(stdout())
 ### Title: Triangular Dense Logical Matrices
 ### Aliases: ntrMatrix-class ntpMatrix-class !,ntrMatrix-method
 ###   !,ntpMatrix-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 showClass("ntrMatrix")
 
 str(new("ntpMatrix"))
@@ -3968,14 +4451,17 @@ flush(stderr()); flush(stdout())
 
 ### Name: pMatrix-class
 ### Title: Permutation matrices
-### Aliases: pMatrix-class -,pMatrix,missing-method
-###   coerce,integer,pMatrix-method coerce,matrix,pMatrix-method
+### Aliases: pMatrix-class coerce,matrix,pMatrix-method
 ###   coerce,numeric,pMatrix-method determinant,pMatrix,logical-method
 ###   t,pMatrix-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 (pm1 <- as(as.integer(c(2,3,1)), "pMatrix"))
 t(pm1) # is the same as
 solve(pm1)
@@ -4010,9 +4496,9 @@ flush(stderr()); flush(stdout())
 ### Name: packedMatrix-class
 ### Title: Virtual Class '"packedMatrix"' of Packed Dense Matrices
 ### Aliases: packedMatrix-class coerce,matrix,packedMatrix-method
-###   diag,packedMatrix-method diag<-,packedMatrix-method
-###   t,packedMatrix-method
-### Keywords: classes
+###   cov2cor,packedMatrix-method diag,packedMatrix-method
+###   diag<-,packedMatrix-method t,packedMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
@@ -4030,7 +4516,7 @@ flush(stderr()); flush(stdout())
 ### Name: printSpMatrix
 ### Title: Format and Print Sparse Matrices Flexibly
 ### Aliases: formatSpMatrix printSpMatrix printSpMatrix2
-### Keywords: print
+### Keywords: character print utilities
 
 ### ** Examples
 
@@ -4060,6 +4546,8 @@ st <- system.time(show(M))
 sink()
 st
 
+if(interactive() || nzchar(Sys.getenv("R_MATRIX_CHECK_EXTRA")))
+## valgrind (2023-07-26) gave 10.5 sec!
 stopifnot(st[1] < 1.0) # only 0.09 on cmath-3
 options(op)
 ## End(Don't show)
@@ -4073,74 +4561,106 @@ nameEx("qr-methods")
 flush(stderr()); flush(stdout())
 
 ### Name: qr-methods
-### Title: QR Decomposition - S4 Methods and Generic
-### Aliases: qr qr-methods qrR qr,denseMatrix-method qr,dgCMatrix-method
-###   qr,sparseMatrix-method
-### Keywords: methods algebra array
+### Title: Methods for QR Factorization
+### Aliases: qr qr-methods qr,dgCMatrix-method qr,sparseMatrix-method
+### Keywords: algebra array methods
 
 ### ** Examples
 
-##------------- example of pivoting -- from base'  qraux.Rd -------------
-X <- cbind(int = 1,
-           b1=rep(1:0, each=3), b2=rep(0:1, each=3),
-           c1=rep(c(1,0,0), 2), c2=rep(c(0,1,0), 2), c3=rep(c(0,0,1),2))
-rownames(X) <- paste0("r", seq_len(nrow(X)))
-dnX <- dimnames(X)
-bX <- X # [b]ase version of X
-X <- as(bX, "sparseMatrix")
-X # is singular, columns "b2" and "c3" are "extra"
-stopifnot(identical(dimnames(X), dnX))# some versions changed X's dimnames!
-c(rankMatrix(X)) # = 4 (not 6)
-m <- function(.) as(., "matrix")
+showMethods("qr", inherited = FALSE)
 
-##----- regular case ------------------------------------------
-Xr <- X[ , -c(3,6)] # the "regular" (non-singular) version of X
-stopifnot(rankMatrix(Xr) == ncol(Xr))
-Y <- cbind(y <- setNames(1:6, paste0("y", 1:6)))
-## regular case:
-qXr   <- qr(  Xr)
-qxr   <- qr(m(Xr))
-qxrLA <- qr(m(Xr), LAPACK=TRUE) # => qr.fitted(), qr.resid() not supported
-qcfXy <- qr.coef (qXr, y) # vector
-qcfXY <- qr.coef (qXr, Y) # 4x1 dgeMatrix
-cf <- c(int=6, b1=-3, c1=-2, c2=-1)
-doExtras <- interactive() || nzchar(Sys.getenv("R_MATRIX_CHECK_EXTRA"))
-tolE <- if(doExtras) 1e-15 else 1e-13
+## Rank deficient: columns 3 {b2} and 6 {c3} are "extra"
+M <- as(cbind(a1 = 1,
+              b1 = rep(c(1, 0), each = 3L),
+              b2 = rep(c(0, 1), each = 3L),
+              c1 = rep(c(1, 0, 0), 2L),
+              c2 = rep(c(0, 1, 0), 2L),
+              c3 = rep(c(0, 0, 1), 2L)),
+        "CsparseMatrix")
+rownames(M) <- paste0("r", seq_len(nrow(M)))
+b <- 1:6
+eps <- .Machine$double.eps
+
+## .... [1] full rank ..................................................
+## ===> a least squares solution of A x = b exists
+##      and is unique _in exact arithmetic_
+
+(A1 <- M[, -c(3L, 6L)])
+(qr.A1 <- qr(A1))
+
 stopifnot(exprs = {
-  all.equal(qr.coef(qxr,  y),   cf,  tol=tolE)
-  all.equal(qr.coef(qxrLA,y),   cf,  tol=tolE)
-  all.equal(qr.coef(qxr,  Y), m(cf), tol=tolE)
-  all.equal(  qcfXy,    cf, tol=tolE)
-  all.equal(m(qcfXY), m(cf), tol=tolE)
-  all.equal(y, qr.fitted(qxr, y), tol=2*tolE)
-  all.equal(y, qr.fitted(qXr, y), tol=2*tolE)
-  all.equal(m(qr.fitted(qXr, Y)), qr.fitted(qxr, Y), tol=tolE)
-  all.equal(  qr.resid (qXr, y),  qr.resid (qxr, y), tol=tolE)
-  all.equal(m(qr.resid (qXr, Y)), qr.resid (qxr, Y), tol=tolE)
+    rankMatrix(A1) == ncol(A1)
+    { d1 <- diag(qr.A1@R); sum(d1 < max(d1) * eps) == 0L }
+    rcond(crossprod(A1)) >= eps
+    all.equal(qr.coef(qr.A1, b), drop(solve(crossprod(A1), crossprod(A1, b))))
+    all.equal(qr.fitted(qr.A1, b) + qr.resid(qr.A1, b), b)
 })
 
-##----- rank-deficient ("singular") case ------------------------------------
+## .... [2] numerically rank deficient with full structural rank .......
+## ===> a least squares solution of A x = b does not
+##      exist or is not unique _in exact arithmetic_
 
-(qX <- qr(  X))           # both @p and @q are non-trivial permutations
- qx <- qr(m(X)) ; str(qx) # $pivot is non-trivial, too
+(A2 <- M)
+(qr.A2 <- qr(A2))
 
-drop0(R. <- qr.R(qX), tol=tolE) # columns *permuted*: c3 b1 ..
-Q. <- qr.Q(qX)
-qI <- sort.list(qX@q) # the inverse 'q' permutation
-(X. <- drop0(Q. %*% R.[, qI], tol=tolE))## just = X, incl. correct colnames
-stopifnot(all(X - X.) < 8*.Machine$double.eps,
-          ## qrR(.) returns R already "back permuted" (as with qI):
-          identical(R.[, qI], qrR(qX)) )
-##
-## In this sense, classical qr.coef() is fine:
-cfqx <- qr.coef(qx, y) # quite different from
-nna <- !is.na(cfqx)
-stopifnot(all.equal(unname(qr.fitted(qx,y)),
-                    as.numeric(X[,nna] %*% cfqx[nna])))
-## FIXME: do these make *any* sense? --- should give warnings !
-qr.coef(qX, y)
-qr.coef(qX, Y)
-rm(m)
+stopifnot(exprs = {
+    rankMatrix(A2) == ncol(A2) - 2L
+    { d2 <- diag(qr.A2@R); sum(d2 < max(d2) * eps) == 2L }
+    rcond(crossprod(A2)) < eps
+
+    ## 'qr.coef' computes unique least squares solution of "nearby" problem
+    ## Z x = b for some full rank Z ~ A, currently without warning {FIXME} !
+    tryCatch({ qr.coef(qr.A2, b); TRUE }, condition = function(x) FALSE)
+
+    all.equal(qr.fitted(qr.A2, b) + qr.resid(qr.A2, b), b)
+})
+
+## .... [3] numerically and structurally rank deficient ................
+## ===> factorization of _augmented_ matrix with
+##      full structural rank proceeds as in [2]
+
+##  NB: implementation details are subject to change; see (*) below
+
+A3 <- M
+A3[, c(3L, 6L)] <- 0
+A3
+(qr.A3 <- qr(A3)) # with a warning ... "additional 2 row(s) of zeros"
+
+stopifnot(exprs = {
+    ## sparseQR object preserves the unaugmented dimensions (*)
+    dim(qr.A3  ) == dim(A3)
+    dim(qr.A3@V) == dim(A3) + c(2L, 0L)
+    dim(qr.A3@R) == dim(A3) + c(2L, 0L)
+
+    ## The augmented matrix remains numerically rank deficient
+    rankMatrix(A3) == ncol(A3) - 2L
+    { d3 <- diag(qr.A3@R); sum(d3 < max(d3) * eps) == 2L }
+    rcond(crossprod(A3)) < eps
+})
+
+## Auxiliary functions accept and return a vector or matrix
+## with dimensions corresponding to the unaugmented matrix (*),
+## in all cases with a warning
+qr.coef  (qr.A3, b)
+qr.fitted(qr.A3, b)
+qr.resid (qr.A3, b)
+
+## .... [4] yet more examples ..........................................
+
+## By disabling column pivoting, one gets the "vanilla" factorization
+## A = Q~ R, where Q~ := P1' Q is orthogonal because P1 and Q are
+
+(qr.A1.pp <- qr(A1, order = 0L)) # partial pivoting
+
+ae1 <- function(a, b, ...) all.equal(as(a, "matrix"), as(b, "matrix"), ...)
+ae2 <- function(a, b, ...) ae1(unname(a), unname(b), ...)
+
+stopifnot(exprs = {
+    length(qr.A1   @q) == ncol(A1)
+    length(qr.A1.pp@q) == 0L # indicating no column pivoting
+    ae2(A1[, qr.A1@q + 1L], qr.Q(qr.A1   ) %*% qr.R(qr.A1   ))
+    ae2(A1                , qr.Q(qr.A1.pp) %*% qr.R(qr.A1.pp))
+})
 
 
 
@@ -4153,10 +4673,14 @@ flush(stderr()); flush(stdout())
 ### Name: rankMatrix
 ### Title: Rank of a Matrix
 ### Aliases: rankMatrix qr2rankMatrix
-### Keywords: algebra array
+### Keywords: algebra utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 rankMatrix(cbind(1, 0, 1:3)) # 2
 
 (meths <- eval(formals(rankMatrix)$method))
@@ -4197,7 +4721,8 @@ sapply(meths, function(.m.) rankMatrix(M15, method = .m., tol = 1e-7)) # all 14
 ## "large" sparse
 n <- 250000; p <- 33; nnz <- 10000
 L <- sparseMatrix(i = sample.int(n, nnz, replace=TRUE),
-                  j = sample.int(p, nnz, replace=TRUE), x = rnorm(nnz))
+                  j = sample.int(p, nnz, replace=TRUE),
+                  x = rnorm(nnz))
 (st1 <- system.time(r1 <- rankMatrix(L)))                # warning+ ~1.5 sec (2013)
 (st2 <- system.time(r2 <- rankMatrix(L, method = "qr"))) # considerably faster!
 r1[[1]] == print(r2[[1]]) ## -->  ( 33  TRUE )
@@ -4228,18 +4753,24 @@ nameEx("rcond")
 
 flush(stderr()); flush(stdout())
 
-### Name: rcond
+### Name: rcond-methods
 ### Title: Estimate the Reciprocal Condition Number
-### Aliases: rcond rcond,ANY,missing-method
+### Aliases: rcond rcond-methods rcond,ANY,missing-method
 ###   rcond,denseMatrix,character-method rcond,dgeMatrix,character-method
+###   rcond,diagonalMatrix,character-method
 ###   rcond,dpoMatrix,character-method rcond,dppMatrix,character-method
 ###   rcond,dspMatrix,character-method rcond,dsyMatrix,character-method
 ###   rcond,dtpMatrix,character-method rcond,dtrMatrix,character-method
+###   rcond,indMatrix,character-method rcond,pMatrix,character-method
 ###   rcond,sparseMatrix,character-method
-### Keywords: array algebra
+### Keywords: algebra math methods
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 x <- Matrix(rnorm(9), 3, 3)
 rcond(x)
 ## typically "the same" (with more computational effort):
@@ -4289,7 +4820,7 @@ flush(stderr()); flush(stdout())
 ### Name: rep2abI
 ### Title: Replicate Vectors into 'abIndex' Result
 ### Aliases: rep2abI
-### Keywords: manip
+### Keywords: manip utilities
 
 ### ** Examples
 
@@ -4346,10 +4877,14 @@ flush(stderr()); flush(stdout())
 ### Name: rsparsematrix
 ### Title: Random Sparse Matrix
 ### Aliases: rsparsematrix
-### Keywords: array distribution
+### Keywords: array distribution utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 set.seed(17)# to be reproducible
 M <- rsparsematrix(8, 12, nnz = 30) # small example, not very sparse
 M
@@ -4376,51 +4911,64 @@ nameEx("solve-methods")
 flush(stderr()); flush(stdout())
 
 ### Name: solve-methods
-### Title: Methods in Package Matrix for Function 'solve()'
+### Title: Methods in Package 'Matrix' for Function 'solve'
 ### Aliases: solve solve-methods solve,ANY,ANY-method
-###   solve,CHMfactor,denseMatrix-method
-###   solve,CHMfactor,sparseMatrix-method solve,CHMfactor,matrix-method
-###   solve,CHMfactor,missing-method solve,CHMfactor,numLike-method
-###   solve,CsparseMatrix,ANY-method solve,Matrix,sparseVector-method
-###   solve,MatrixFactorization,ANY-method
-###   solve,MatrixFactorization,missing-method
+###   solve,BunchKaufman,missing-method solve,BunchKaufman,dgeMatrix-method
+###   solve,CHMfactor,missing-method solve,CHMfactor,dgeMatrix-method
+###   solve,CHMfactor,dgCMatrix-method solve,Cholesky,missing-method
+###   solve,Cholesky,dgeMatrix-method solve,CsparseMatrix,ANY-method
+###   solve,Matrix,sparseVector-method
+###   solve,MatrixFactorization,CsparseMatrix-method
+###   solve,MatrixFactorization,RsparseMatrix-method
+###   solve,MatrixFactorization,TsparseMatrix-method
+###   solve,MatrixFactorization,denseMatrix-method
+###   solve,MatrixFactorization,dgCMatrix-method
+###   solve,MatrixFactorization,dgeMatrix-method
+###   solve,MatrixFactorization,diagonalMatrix-method
+###   solve,MatrixFactorization,indMatrix-method
+###   solve,MatrixFactorization,matrix-method
+###   solve,MatrixFactorization,numLike-method
 ###   solve,MatrixFactorization,sparseVector-method
-###   solve,RsparseMatrix,ANY-method solve,TsparseMatrix,ANY-method
-###   solve,ddiMatrix,Matrix-method solve,ddiMatrix,matrix-method
-###   solve,ddiMatrix,missing-method solve,ddiMatrix,numLike-method
-###   solve,denseLU,missing-method solve,denseMatrix,ANY-method
+###   solve,RsparseMatrix,ANY-method solve,Schur,ANY-method
+###   solve,TsparseMatrix,ANY-method solve,ddiMatrix,Matrix-method
+###   solve,ddiMatrix,matrix-method solve,ddiMatrix,missing-method
+###   solve,ddiMatrix,numLike-method solve,denseLU,missing-method
+###   solve,denseLU,dgeMatrix-method solve,denseMatrix,ANY-method
 ###   solve,dgCMatrix,denseMatrix-method solve,dgCMatrix,matrix-method
 ###   solve,dgCMatrix,missing-method solve,dgCMatrix,numLike-method
-###   solve,dgCMatrix,sparseMatrix-method solve,dgeMatrix,Matrix-method
-###   solve,dgeMatrix,matrix-method solve,dgeMatrix,missing-method
-###   solve,dgeMatrix,numLike-method solve,diagonalMatrix,ANY-method
-###   solve,dpoMatrix,Matrix-method solve,dpoMatrix,matrix-method
-###   solve,dpoMatrix,missing-method solve,dpoMatrix,numLike-method
-###   solve,dppMatrix,Matrix-method solve,dppMatrix,matrix-method
-###   solve,dppMatrix,missing-method solve,dppMatrix,numLike-method
-###   solve,dsCMatrix,denseMatrix-method solve,dsCMatrix,matrix-method
-###   solve,dsCMatrix,missing-method solve,dsCMatrix,numLike-method
-###   solve,dsCMatrix,sparseMatrix-method solve,dspMatrix,Matrix-method
-###   solve,dspMatrix,matrix-method solve,dspMatrix,missing-method
-###   solve,dspMatrix,numLike-method solve,dsyMatrix,Matrix-method
-###   solve,dsyMatrix,matrix-method solve,dsyMatrix,missing-method
-###   solve,dsyMatrix,numLike-method solve,dtpMatrix,Matrix-method
-###   solve,dtpMatrix,matrix-method solve,dtpMatrix,missing-method
-###   solve,dtpMatrix,numLike-method solve,dtrMatrix,Matrix-method
-###   solve,dtrMatrix,matrix-method solve,dtrMatrix,missing-method
-###   solve,dtrMatrix,numLike-method solve,indMatrix,ANY-method
-###   solve,pMatrix,Matrix-method solve,pMatrix,matrix-method
-###   solve,pMatrix,missing-method solve,pMatrix,numLike-method
+###   solve,dgCMatrix,sparseMatrix-method solve,dgeMatrix,ANY-method
+###   solve,diagonalMatrix,ANY-method solve,dpoMatrix,ANY-method
+###   solve,dppMatrix,ANY-method solve,dsCMatrix,denseMatrix-method
+###   solve,dsCMatrix,matrix-method solve,dsCMatrix,missing-method
+###   solve,dsCMatrix,numLike-method solve,dsCMatrix,sparseMatrix-method
+###   solve,dspMatrix,ANY-method solve,dsyMatrix,ANY-method
 ###   solve,dtCMatrix,dgCMatrix-method solve,dtCMatrix,dgeMatrix-method
-###   solve,dtCMatrix,dsCMatrix-method solve,dtCMatrix,dspMatrix-method
-###   solve,dtCMatrix,dsyMatrix-method solve,dtCMatrix,dtCMatrix-method
-###   solve,dtCMatrix,dtpMatrix-method solve,dtCMatrix,dtrMatrix-method
-###   solve,dtCMatrix,denseMatrix-method solve,dtCMatrix,matrix-method
-###   solve,dtCMatrix,missing-method solve,dtCMatrix,numLike-method
-###   solve,dtCMatrix,sparseMatrix-method solve,matrix,Matrix-method
-###   solve,matrix,sparseVector-method solve,sparseQR,ANY-method
-###   solve,sparseQR,missing-method
-### Keywords: methods
+###   solve,dtCMatrix,missing-method
+###   solve,dtCMatrix,triangularMatrix-method
+###   solve,dtpMatrix,dgeMatrix-method solve,dtpMatrix,missing-method
+###   solve,dtpMatrix,triangularMatrix-method
+###   solve,dtrMatrix,dgeMatrix-method solve,dtrMatrix,missing-method
+###   solve,dtrMatrix,triangularMatrix-method solve,indMatrix,ANY-method
+###   solve,matrix,Matrix-method solve,matrix,sparseVector-method
+###   solve,pBunchKaufman,missing-method
+###   solve,pBunchKaufman,dgeMatrix-method solve,pCholesky,missing-method
+###   solve,pCholesky,dgeMatrix-method solve,pMatrix,Matrix-method
+###   solve,pMatrix,matrix-method solve,pMatrix,missing-method
+###   solve,pMatrix,numLike-method solve,sparseLU,missing-method
+###   solve,sparseLU,dgeMatrix-method solve,sparseLU,dgCMatrix-method
+###   solve,sparseQR,missing-method solve,sparseQR,dgeMatrix-method
+###   solve,sparseQR,dgCMatrix-method
+###   solve,triangularMatrix,CsparseMatrix-method
+###   solve,triangularMatrix,RsparseMatrix-method
+###   solve,triangularMatrix,TsparseMatrix-method
+###   solve,triangularMatrix,denseMatrix-method
+###   solve,triangularMatrix,dgCMatrix-method
+###   solve,triangularMatrix,dgeMatrix-method
+###   solve,triangularMatrix,diagonalMatrix-method
+###   solve,triangularMatrix,indMatrix-method
+###   solve,triangularMatrix,matrix-method
+###   solve,triangularMatrix,numLike-method
+### Keywords: algebra array methods
 
 ### ** Examples
 
@@ -4435,7 +4983,7 @@ n <- nrow(ZZ <- kronecker(XXt, Diagonal(x=c(4,1))))
 image(a <- 2*Diagonal(n) + ZZ %*% Diagonal(x=c(10, rep(1, n-1))))
 isSymmetric(a) # FALSE
 image(drop0(skewpart(a)))
-image(ia0 <- solve(a)) # checker board, dense [but really, a is singular!]
+image(ia0 <- solve(a, tol = 0)) # checker board, dense [but really, a is singular!]
 try(solve(a, sparse=TRUE))##-> error [ TODO: assertError ]
 ia. <- solve(a, sparse=TRUE, tol = 1e-19)##-> *no* error
 if(R.version$arch == "x86_64")
@@ -4443,8 +4991,8 @@ if(R.version$arch == "x86_64")
   stopifnot(all.equal(as.matrix(ia.), as.matrix(ia0)))
 a <- a + Diagonal(n)
 iad <- solve(a)
-ias <- solve(a, sparse=TRUE)
-stopifnot(all.equal(as(ias,"denseMatrix"), iad, tolerance=1e-14))
+ias <- solve(a, sparse=FALSE)
+stopifnot(all.equal(as(iad,"denseMatrix"), ias, tolerance=1e-14))
 I. <- iad %*% a          ; image(I.)
 I0 <- drop0(zapsmall(I.)); image(I0)
 .I <- a %*% iad
@@ -4464,10 +5012,15 @@ flush(stderr()); flush(stdout())
 ### Name: spMatrix
 ### Title: Sparse Matrix Constructor From Triplet
 ### Aliases: spMatrix
-### Keywords: array
+### Keywords: array utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 ## simple example
 A <- spMatrix(10,20, i = c(1,3:8),
                      j = c(2,9,6:10),
@@ -4515,10 +5068,14 @@ flush(stderr()); flush(stdout())
 ### Name: sparse.model.matrix
 ### Title: Construct Sparse Design / Model Matrices
 ### Aliases: sparse.model.matrix fac2sparse fac2Sparse
-### Keywords: models
+### Keywords: array models utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 dd <- data.frame(a = gl(3,4), b = gl(4,1,12))# balanced 2-way
 options("contrasts") # the default:  "contr.treatment"
 sparse.model.matrix(~ a + b, dd)
@@ -4527,10 +5084,10 @@ sparse.model.matrix(~ a + b, dd, contrasts = list(a="contr.sum"))
 sparse.model.matrix(~ a + b, dd, contrasts = list(b="contr.SAS"))
 
 ## Sparse method is equivalent to the traditional one :
-stopifnot(all(sparse.model.matrix(~ a + b, dd) ==
-	      Matrix(model.matrix(~ a + b, dd), sparse=TRUE)),
-	  all(sparse.model.matrix(~ 0+ a + b, dd) ==
-	      Matrix(model.matrix(~ 0+ a + b, dd), sparse=TRUE)))
+stopifnot(all(sparse.model.matrix(~    a + b, dd) ==
+	          Matrix(model.matrix(~    a + b, dd), sparse=TRUE)),
+	      all(sparse.model.matrix(~0 + a + b, dd) ==
+	          Matrix(model.matrix(~0 + a + b, dd), sparse=TRUE)))
 
 (ff <- gl(3,4,, c("X","Y", "Z")))
 fac2sparse(ff) #  3 x 12 sparse Matrix of class "dgCMatrix"
@@ -4561,39 +5118,53 @@ nameEx("sparseLU-class")
 flush(stderr()); flush(stdout())
 
 ### Name: sparseLU-class
-### Title: Sparse LU decomposition of a square sparse matrix
-### Aliases: sparseLU-class
-### Keywords: classes
+### Title: Sparse LU Factorizations
+### Aliases: sparseLU-class determinant,sparseLU,logical-method
+### Keywords: algebra array classes
 
 ### ** Examples
 
-## Extending the one in   examples(lu), calling the matrix  A,
-## and confirming the factorization identities :
-A <- as(readMM(system.file("external/pores_1.mtx",
-                            package = "Matrix")),
-         "CsparseMatrix")
-## with dimnames(.) - to see that they propagate to L, U :
-dimnames(A) <- list(paste0("r", seq_len(nrow(A))),
-                    paste0("C", seq_len(ncol(A))))
-str(luA <- lu(A)) # p is a 0-based permutation of the rows
-                  # q is a 0-based permutation of the columns
-xA <- expand(luA)
-## which is simply doing
-stopifnot(identical(xA$ L, luA@L),
-          identical(xA$ U, luA@U),
-          identical(xA$ P, as(luA@p +1L, "pMatrix")),
-          identical(xA$ Q, as(luA@q +1L, "pMatrix")))
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showClass("sparseLU")
+set.seed(2)
 
-P.LUQ <- with(xA, t(P) %*% L %*% U %*% Q)
-stopifnot(all.equal(unname(A), unname(P.LUQ), tolerance = 1e-12))
+A <- as(readMM(system.file("external", "pores_1.mtx", package = "Matrix")),
+        "CsparseMatrix")
+(n <- A@Dim[1L])
 
-## permute rows and columns of original matrix
-pA <- A[luA@p + 1L, luA@q + 1L]
-PAQ. <- with(xA, P %*% A %*% t(Q))
-stopifnot(all.equal(unname(pA), unname(PAQ.), tolerance = 1e-12))
+## With dimnames, to see that they are propagated :
+dimnames(A) <- dn <- list(paste0("r", seq_len(n)),
+                          paste0("c", seq_len(n)))
 
-pLU <- drop0(luA@L %*% luA@U) # L %*% U -- dropping extra zeros
-stopifnot(all.equal(pA, pLU, tolerance = 1e-12)) # (incl. permuted row- and column-names)
+(lu.A <- lu(A))
+str(e.lu.A <- expand2(lu.A), max.level = 2L)
+
+ae1 <- function(a, b, ...) all.equal(as(a, "matrix"), as(b, "matrix"), ...)
+ae2 <- function(a, b, ...) ae1(unname(a), unname(b), ...)
+
+## A ~ P1' L U P2' in floating point
+stopifnot(exprs = {
+    identical(names(e.lu.A), c("P1.", "L", "U", "P2."))
+    identical(e.lu.A[["P1."]],
+              new("pMatrix", Dim = c(n, n), Dimnames = c(dn[1L], list(NULL)),
+                  margin = 1L, perm = invertPerm(lu.A@p, 0L, 1L)))
+    identical(e.lu.A[["P2."]],
+              new("pMatrix", Dim = c(n, n), Dimnames = c(list(NULL), dn[2L]),
+                  margin = 2L, perm = invertPerm(lu.A@q, 0L, 1L)))
+    identical(e.lu.A[["L"]], lu.A@L)
+    identical(e.lu.A[["U"]], lu.A@U)
+    ae1(A, with(e.lu.A, P1. %*% L %*% U %*% P2.))
+    ae2(A[lu.A@p + 1L, lu.A@q + 1L], with(e.lu.A, L %*% U))
+})
+
+## Factorization handled as factorized matrix
+b <- rnorm(n)
+stopifnot(identical(det(A), det(lu.A)),
+          identical(solve(A, b), solve(lu.A, b)))
 
 
 
@@ -4609,33 +5180,29 @@ flush(stderr()); flush(stdout())
 ###   Math,sparseMatrix-method Ops,numeric,sparseMatrix-method
 ###   Ops,sparseMatrix,ddiMatrix-method Ops,sparseMatrix,ldiMatrix-method
 ###   Ops,sparseMatrix,nsparseMatrix-method Ops,sparseMatrix,numeric-method
-###   Ops,sparseMatrix,sparseMatrix-method
-###   cbind2,matrix,sparseMatrix-method
-###   cbind2,sparseMatrix,diagonalMatrix-method
-###   cbind2,sparseMatrix,matrix-method
-###   cbind2,sparseMatrix,sparseMatrix-method
-###   coerce,ANY,sparseMatrix-method coerce,factor,sparseMatrix-method
-###   coerce,matrix,sparseMatrix-method coerce,numLike,sparseMatrix-method
-###   coerce,sparseMatrix,sparseVector-method
-###   coerce,table,sparseMatrix-method cov2cor,sparseMatrix-method
+###   Ops,sparseMatrix,sparseMatrix-method coerce,ANY,sparseMatrix-method
+###   coerce,factor,sparseMatrix-method coerce,matrix,sparseMatrix-method
+###   coerce,vector,sparseMatrix-method cov2cor,sparseMatrix-method
 ###   dim<-,sparseMatrix-method format,sparseMatrix-method
 ###   log,sparseMatrix-method mean,sparseMatrix-method
-###   print,sparseMatrix-method rbind2,matrix,sparseMatrix-method
-###   rbind2,sparseMatrix,diagonalMatrix-method
-###   rbind2,sparseMatrix,matrix-method
-###   rbind2,sparseMatrix,sparseMatrix-method rep,sparseMatrix-method
+###   print,sparseMatrix-method rep,sparseMatrix-method
 ###   show,sparseMatrix-method summary,sparseMatrix-method
 ###   print.sparseMatrix
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 showClass("sparseMatrix") ## and look at the help() of its subclasses
 M <- Matrix(0, 10000, 100)
 M[1,1] <- M[2,3] <- 3.14
 M  ## show(.) method suppresses printing of the majority of rows
 
-data(CAex); dim(CAex) # 72 x 72 matrix
+data(CAex, package = "Matrix")
+dim(CAex) # 72 x 72 matrix
 determinant(CAex) # works via sparse lu(.)
 
 ## factor -> t( <sparse design matrix> ) :
@@ -4660,10 +5227,14 @@ flush(stderr()); flush(stdout())
 ### Name: sparseMatrix
 ### Title: General Sparse Matrix Construction from Nonzero Entries
 ### Aliases: sparseMatrix
-### Keywords: array
+### Keywords: array utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 ## simple example
 i <- c(1,3:8); j <- c(2,9,6:10); x <- 7 * (1:7)
 (A <- sparseMatrix(i, j, x = x))                    ##  8 x 10 "dgCMatrix"
@@ -4730,9 +5301,10 @@ M1 <- rsparsematrix(1000, 20, nnz = 200)
 summary(M1)
 
 ## pointers example in converting from other sparse matrix representations.
-if(require(SparseM) && packageVersion("SparseM") >= 0.87 &&
+if(requireNamespace("SparseM") &&
+   packageVersion("SparseM") >= "0.87" &&
    nzchar(dfil <- system.file("extdata", "rua_32_ax.rua", package = "SparseM"))) {
-  X <- model.matrix(read.matrix.hb(dfil))
+  X <- SparseM::model.matrix(SparseM::read.matrix.hb(dfil))
   XX <- sparseMatrix(j = X@ja, p = X@ia - 1L, x = X@ra, dims = X@dimension)
   validObject(XX)
 
@@ -4751,35 +5323,104 @@ nameEx("sparseQR-class")
 flush(stderr()); flush(stdout())
 
 ### Name: sparseQR-class
-### Title: Sparse QR decomposition of a sparse matrix
-### Aliases: sparseQR-class qr.Q qr.Q,sparseQR-method qr.R,sparseQR-method
-###   qr.coef,sparseQR,Matrix-method qr.coef,sparseQR,ddenseMatrix-method
-###   qr.coef,sparseQR,matrix-method qr.coef,sparseQR,numeric-method
-###   qr.fitted,sparseQR,Matrix-method
-###   qr.fitted,sparseQR,ddenseMatrix-method
-###   qr.fitted,sparseQR,matrix-method qr.fitted,sparseQR,numeric-method
-###   qr.qty,sparseQR,Matrix-method qr.qty,sparseQR,ddenseMatrix-method
-###   qr.qty,sparseQR,matrix-method qr.qty,sparseQR,numeric-method
-###   qr.qy,sparseQR,Matrix-method qr.qy,sparseQR,ddenseMatrix-method
-###   qr.qy,sparseQR,matrix-method qr.qy,sparseQR,numeric-method
-###   qr.resid,sparseQR,Matrix-method qr.resid,sparseQR,ddenseMatrix-method
-###   qr.resid,sparseQR,matrix-method qr.resid,sparseQR,numeric-method
-### Keywords: classes algebra array
+### Title: Sparse QR Factorizations
+### Aliases: sparseQR-class determinant,sparseQR,logical-method
+###   qr.Q,sparseQR-method qr.R,sparseQR-method qr.X,sparseQR-method
+###   qr.coef,sparseQR,Matrix-method qr.coef,sparseQR,dgeMatrix-method
+###   qr.coef,sparseQR,matrix-method qr.coef,sparseQR,numLike-method
+###   qr.fitted,sparseQR,Matrix-method qr.fitted,sparseQR,dgeMatrix-method
+###   qr.fitted,sparseQR,matrix-method qr.fitted,sparseQR,numLike-method
+###   qr.qty,sparseQR,Matrix-method qr.qty,sparseQR,dgeMatrix-method
+###   qr.qty,sparseQR,matrix-method qr.qty,sparseQR,numLike-method
+###   qr.qy,sparseQR,Matrix-method qr.qy,sparseQR,dgeMatrix-method
+###   qr.qy,sparseQR,matrix-method qr.qy,sparseQR,numLike-method
+###   qr.resid,sparseQR,Matrix-method qr.resid,sparseQR,dgeMatrix-method
+###   qr.resid,sparseQR,matrix-method qr.resid,sparseQR,numLike-method qrR
+### Keywords: algebra array classes utilities
 
 ### ** Examples
 
-data(KNex)
-mm <- KNex $ mm
- y <- KNex $  y
- y. <- as(y, "CsparseMatrix")
-str(qrm <- qr(mm))
- qc  <- qr.coef  (qrm, y); qc. <- qr.coef  (qrm, y.) # 2nd failed in Matrix <= 1.1-0
- qf  <- qr.fitted(qrm, y); qf. <- qr.fitted(qrm, y.)
- qs  <- qr.resid (qrm, y); qs. <- qr.resid (qrm, y.)
-stopifnot(all.equal(qc, as.numeric(qc.),  tolerance=1e-12),
-          all.equal(qf, as.numeric(qf.),  tolerance=1e-12),
-          all.equal(qs, as.numeric(qs.),  tolerance=1e-12),
-          all.equal(qf+qs, y, tolerance=1e-12))
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+showClass("sparseQR")
+set.seed(2)
+
+m <- 300L
+n <- 60L
+A <- rsparsematrix(m, n, 0.05)
+
+## With dimnames, to see that they are propagated :
+dimnames(A) <- dn <- list(paste0("r", seq_len(m)),
+                          paste0("c", seq_len(n)))
+
+(qr.A <- qr(A))
+str(e.qr.A <- expand2(qr.A, complete = FALSE), max.level = 2L)
+str(E.qr.A <- expand2(qr.A, complete =  TRUE), max.level = 2L)
+
+t(sapply(e.qr.A, dim))
+t(sapply(E.qr.A, dim))
+
+## Horribly inefficient, but instructive :
+slowQ <- function(V, beta) {
+    d <- dim(V)
+    Q <- diag(d[1L])
+    if(d[2L] > 0L) {
+        for(j in d[2L]:1L) {
+            cat(j, "\n", sep = "")
+            Q <- Q - (beta[j] * tcrossprod(V[, j])) %*% Q
+        }
+    }
+    Q
+}
+
+ae1 <- function(a, b, ...) all.equal(as(a, "matrix"), as(b, "matrix"), ...)
+ae2 <- function(a, b, ...) ae1(unname(a), unname(b), ...)
+
+## A ~ P1' Q R P2' ~ P1' Q1 R1 P2' in floating point
+stopifnot(exprs = {
+    identical(names(e.qr.A), c("P1.", "Q1", "R1", "P2."))
+    identical(names(E.qr.A), c("P1.", "Q" , "R" , "P2."))
+    identical(e.qr.A[["P1."]],
+              new("pMatrix", Dim = c(m, m), Dimnames = c(dn[1L], list(NULL)),
+                  margin = 1L, perm = invertPerm(qr.A@p, 0L, 1L)))
+    identical(e.qr.A[["P2."]],
+              new("pMatrix", Dim = c(n, n), Dimnames = c(list(NULL), dn[2L]),
+                  margin = 2L, perm = invertPerm(qr.A@q, 0L, 1L)))
+    identical(e.qr.A[["R1"]], triu(E.qr.A[["R"]][seq_len(n), ]))
+    identical(e.qr.A[["Q1"]],      E.qr.A[["Q"]][, seq_len(n)] )
+    identical(E.qr.A[["R"]], qr.A@R)
+ ## ae1(E.qr.A[["Q"]], slowQ(qr.A@V, qr.A@beta))
+    ae1(crossprod(E.qr.A[["Q"]]), diag(m))
+    ae1(A, with(e.qr.A, P1. %*% Q1 %*% R1 %*% P2.))
+    ae1(A, with(E.qr.A, P1. %*% Q  %*% R  %*% P2.))
+    ae2(A.perm <- A[qr.A@p + 1L, qr.A@q + 1L], with(e.qr.A, Q1 %*% R1))
+    ae2(A.perm                               , with(E.qr.A, Q  %*% R ))
+})
+
+## More identities
+b <- rnorm(m)
+stopifnot(exprs = {
+    ae1(qrX <- qr.X     (qr.A   ), A)
+    ae2(qrQ <- qr.Q     (qr.A   ), with(e.qr.A, P1. %*% Q1))
+    ae2(       qr.R     (qr.A   ), with(e.qr.A, R1))
+    ae2(qrc <- qr.coef  (qr.A, b), with(e.qr.A, solve(R1 %*% P2., t(qrQ)) %*% b))
+    ae2(qrf <- qr.fitted(qr.A, b), with(e.qr.A, tcrossprod(qrQ) %*% b))
+    ae2(qrr <- qr.resid (qr.A, b), b - qrf)
+    ae2(qrq <- qr.qy    (qr.A, b), with(E.qr.A, P1. %*% Q %*% b))
+    ae2(qr.qty(qr.A, qrq), b)
+})
+
+## Sparse and dense computations should agree here
+qr.Am <- qr(as(A, "matrix")) # <=> qr.default(A)
+stopifnot(exprs = {
+    ae2(qrX, qr.X     (qr.Am   ))
+    ae2(qrc, qr.coef  (qr.Am, b))
+    ae2(qrf, qr.fitted(qr.Am, b))
+    ae2(qrr, qr.resid (qr.Am, b))
+})
 
 
 
@@ -4791,9 +5432,9 @@ flush(stderr()); flush(stdout())
 
 ### Name: sparseVector-class
 ### Title: Sparse Vector Classes
-### Aliases: sparseVector-class dsparseVector-class isparseVector-class
-###   lsparseVector-class nsparseVector-class zsparseVector-class
-###   xsparseVector-class c.sparseVector !,sparseVector-method
+### Aliases: sparseVector-class nsparseVector-class lsparseVector-class
+###   isparseVector-class dsparseVector-class zsparseVector-class
+###   xsparseVector-class !,sparseVector-method
 ###   Arith,sparseVector,ddenseMatrix-method
 ###   Arith,sparseVector,dgeMatrix-method
 ###   Arith,sparseVector,sparseVector-method
@@ -4825,18 +5466,23 @@ flush(stderr()); flush(stdout())
 ###   mean,sparseVector-method rep,sparseVector-method
 ###   show,sparseVector-method t,sparseVector-method
 ###   tail,sparseVector-method toeplitz,sparseVector-method
-###   -,dsparseVector,missing-method
-###   Arith,dsparseVector,dsparseVector-method Math2,dsparseVector-method
-###   Logic,lsparseVector,lsparseVector-method which,lsparseVector-method
 ###   Summary,nsparseVector-method coerce,ANY,nsparseVector-method
 ###   coerce,nsparseVector,dsparseVector-method
 ###   coerce,nsparseVector,isparseVector-method
 ###   coerce,nsparseVector,lsparseVector-method
 ###   coerce,nsparseVector,zsparseVector-method which,nsparseVector-method
-### Keywords: classes
+###   Logic,lsparseVector,lsparseVector-method which,lsparseVector-method
+###   -,dsparseVector,missing-method
+###   Arith,dsparseVector,dsparseVector-method Math2,dsparseVector-method
+###   c.sparseVector
+### Keywords: classes manip
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 getClass("sparseVector")
 getClass("dsparseVector")
 getClass("xsparseVector")# those with an 'x' slot
@@ -4922,10 +5568,14 @@ flush(stderr()); flush(stdout())
 ### Name: sparseVector
 ### Title: Sparse Vector Construction from Nonzero Entries
 ### Aliases: sparseVector
-### Keywords: array
+### Keywords: utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 str(sv <- sparseVector(x = 1:10, i = sample(999, 10), length=1000))
 
 sx <- c(0,0,3, 3.2, 0,0,0,-3:1,0,0,2,0,0,5,0,0)
@@ -4950,7 +5600,7 @@ flush(stderr()); flush(stdout())
 ### Title: Virtual Class of Symmetric Matrices in Package Matrix
 ### Aliases: symmetricMatrix-class coerce,matrix,symmetricMatrix-method
 ###   dimnames,symmetricMatrix-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
@@ -4984,7 +5634,7 @@ nameEx("symmpart")
 
 flush(stderr()); flush(stdout())
 
-### Name: symmpart
+### Name: symmpart-methods
 ### Title: Symmetric Part and Skew(symmetric) Part of a Matrix
 ### Aliases: symmpart symmpart-methods skewpart skewpart-methods
 ###   symmpart,CsparseMatrix-method symmpart,RsparseMatrix-method
@@ -4995,7 +5645,7 @@ flush(stderr()); flush(stdout())
 ###   skewpart,TsparseMatrix-method skewpart,diagonalMatrix-method
 ###   skewpart,indMatrix-method skewpart,packedMatrix-method
 ###   skewpart,matrix-method skewpart,unpackedMatrix-method
-### Keywords: array arith
+### Keywords: algebra arith array methods
 
 ### ** Examples
 
@@ -5032,7 +5682,7 @@ flush(stderr()); flush(stdout())
 ###   Logic,triangularMatrix,diagonalMatrix-method
 ###   coerce,matrix,triangularMatrix-method
 ###   determinant,triangularMatrix,logical-method
-### Keywords: classes
+### Keywords: array classes
 
 ### ** Examples
 
@@ -5057,10 +5707,15 @@ flush(stderr()); flush(stdout())
 ### Name: uniqTsparse
 ### Title: Unique (Sorted) TsparseMatrix Representations
 ### Aliases: uniqTsparse anyDuplicatedT
-### Keywords: utilities classes
+### Keywords: array logic manip utilities
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 example("dgTMatrix-class", echo=FALSE)
 ## -> 'T2'  with (i,j,x) slots of length 5 each
 T2u <- uniqTsparse(T2)
@@ -5111,17 +5766,22 @@ nameEx("unpack")
 
 flush(stderr()); flush(stdout())
 
-### Name: unpack
+### Name: pack
 ### Title: Representation of Packed and Unpacked Dense Matrices
-### Aliases: pack unpack pack,dgeMatrix-method pack,lgeMatrix-method
-###   pack,matrix-method pack,ngeMatrix-method pack,packedMatrix-method
-###   pack,sparseMatrix-method pack,unpackedMatrix-method
-###   unpack,matrix-method unpack,packedMatrix-method
-###   unpack,sparseMatrix-method unpack,unpackedMatrix-method
-### Keywords: array algebra
+### Aliases: pack pack-methods unpack unpack-methods pack,dgeMatrix-method
+###   pack,lgeMatrix-method pack,matrix-method pack,ngeMatrix-method
+###   pack,packedMatrix-method pack,sparseMatrix-method
+###   pack,unpackedMatrix-method unpack,matrix-method
+###   unpack,packedMatrix-method unpack,sparseMatrix-method
+###   unpack,unpackedMatrix-method
+### Keywords: array methods
 
 ### ** Examples
 
+## Don't show: 
+ 
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
 showMethods("pack")
 (s <- crossprod(matrix(sample(15), 5,3))) # traditional symmetric matrix
 (sp <- pack(s))
@@ -5155,9 +5815,10 @@ flush(stderr()); flush(stdout())
 ### Name: unpackedMatrix-class
 ### Title: Virtual Class '"unpackedMatrix"' of Unpacked Dense Matrices
 ### Aliases: unpackedMatrix-class coerce,matrix,unpackedMatrix-method
-###   coerce,numLike,unpackedMatrix-method diag,unpackedMatrix-method
-###   diag<-,unpackedMatrix-method t,unpackedMatrix-method
-### Keywords: classes
+###   coerce,vector,unpackedMatrix-method cov2cor,unpackedMatrix-method
+###   diag,unpackedMatrix-method diag<-,unpackedMatrix-method
+###   t,unpackedMatrix-method
+### Keywords: array classes
 
 ### ** Examples
 
@@ -5172,10 +5833,10 @@ nameEx("unused-classes")
 
 flush(stderr()); flush(stdout())
 
-### Name: Unused-classes
+### Name: Matrix-notyet
 ### Title: Virtual Classes Not Yet Really Implemented and Used
-### Aliases: iMatrix-class zMatrix-class
-### Keywords: classes
+### Aliases: Matrix-notyet iMatrix-class zMatrix-class
+### Keywords: array classes
 
 ### ** Examples
 
@@ -5190,26 +5851,33 @@ nameEx("updown")
 
 flush(stderr()); flush(stdout())
 
-### Name: updown
-### Title: Up- and Down-Dating a Cholesky Decomposition
-### Aliases: updown updown-methods updown,ANY,ANY,ANY-method
-###   updown,character,mMatrix,CHMfactor-method
-###   updown,logical,mMatrix,CHMfactor-method
-### Keywords: methods
+### Name: updown-methods
+### Title: Updating and Downdating Sparse Cholesky Factorizations
+### Aliases: updown updown-methods updown,character,Matrix,CHMfactor-method
+###   updown,character,matrix,CHMfactor-method
+###   updown,logical,Matrix,CHMfactor-method
+###   updown,logical,dgCMatrix,CHMfactor-method
+###   updown,logical,dsCMatrix,CHMfactor-method
+###   updown,logical,dtCMatrix,CHMfactor-method
+###   updown,logical,matrix,CHMfactor-method
+### Keywords: algebra array methods
 
 ### ** Examples
 
-dn <- list(LETTERS[1:3], letters[1:5])
-## pointer vectors can be used, and the (i,x) slots are sorted if necessary:
-m <- sparseMatrix(i = c(3,1, 3:2, 2:1), p= c(0:2, 4,4,6), x = 1:6, dimnames = dn)
-cA <- Cholesky(A <- crossprod(m) + Diagonal(5))
-166 * as(cA,"Matrix") ^ 2
-uc1 <- updown("+",   Diagonal(5), cA)
+m <- sparseMatrix(i = c(3, 1, 3:2, 2:1), p = c(0:2, 4, 4, 6), x = 1:6,
+                  dimnames = list(LETTERS[1:3], letters[1:5]))
+uc0 <- Cholesky(A <- crossprod(m) + Diagonal(5))
+uc1 <- updown("+", Diagonal(5, 1), uc0)
+uc2 <- updown("-", Diagonal(5, 1), uc1)
+stopifnot(all.equal(uc0, uc2))
+## Don't show: 
+if(FALSE) {
 ## Hmm: this loses positive definiteness:
-uc2 <- updown("-", 2*Diagonal(5), cA)
-image(show(as(cA, "Matrix")))
-image(show(c2 <- as(uc2,"Matrix")))# severely negative entries
-##--> Warning
+uc2 <- updown("-", Diagonal(5, 2), uc0)
+image(show(as(uc0, "CsparseMatrix")))
+image(show(as(uc2, "CsparseMatrix"))) # severely negative entries
+}
+## End(Don't show)
 
 
 
@@ -5220,39 +5888,40 @@ nameEx("wrld_1deg")
 flush(stderr()); flush(stdout())
 
 ### Name: wrld_1deg
-### Title: World 1-degree grid contiguity matrix
+### Title: Contiguity Matrix of World One-Degree Grid Cells
 ### Aliases: wrld_1deg
 ### Keywords: datasets
 
 ### ** Examples
 
-data(wrld_1deg)
+## Don't show: 
+ 
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+## End(Don't show)
+data(wrld_1deg, package = "Matrix")
 (n <- ncol(wrld_1deg))
-IM <- .symDiagonal(n)
+I <- .symDiagonal(n)
+
 doExtras <- interactive() || nzchar(Sys.getenv("R_MATRIX_CHECK_EXTRA"))
-nn <- if(doExtras) 20 else 3
 set.seed(1)
-rho <- runif(nn, 0, 1)
-system.time(MJ <- sapply(rho,
-                   function(x) determinant(IM - x * wrld_1deg,
-                                           logarithm = TRUE)$modulus))
-nWC <- -wrld_1deg
-C1 <- Cholesky(nWC, Imult = 2)
-## Note that det(<CHMfactor>) = det(L) = sqrt(det(A))
-## ====> log det(A) = log( det(L)^2 ) = 2 * log det(L) :
-system.time(MJ1 <- n * log(rho) +
-   sapply(rho, function(x) c(2* determinant(update(C1, nWC, 1/x))$modulus))
-)
-stopifnot(all.equal(MJ, MJ1))
-C2 <- Cholesky(nWC, super = TRUE, Imult = 2)
-system.time(MJ2 <- n * log(rho) +
-   sapply(rho, function(x) c(2* determinant(update(C2, nWC, 1/x))$modulus))
-)
-system.time(MJ3 <- n * log(rho) + Matrix:::ldetL2up(C1, nWC, 1/rho))
-system.time(MJ4 <- n * log(rho) + Matrix:::ldetL2up(C2, nWC, 1/rho))
-stopifnot(all.equal(MJ, MJ2),
-          all.equal(MJ, MJ3),
-          all.equal(MJ, MJ4))
+r <- if(doExtras) 20L else 3L
+rho <- 1 / runif(r, 0, 0.5)
+
+system.time(MJ0 <- sapply(rho, function(mult)
+    determinant(wrld_1deg + mult * I, logarithm = TRUE)$modulus))
+
+## Can be done faster by updating the Cholesky factor:
+
+C1 <- Cholesky(wrld_1deg, Imult = 2)
+system.time(MJ1 <- sapply(rho, function(mult)
+    determinant(update(C1, wrld_1deg, mult), sqrt = FALSE)$modulus))
+stopifnot(all.equal(MJ0, MJ1))
+
+C2 <- Cholesky(wrld_1deg, super = TRUE, Imult = 2)
+system.time(MJ2 <- sapply(rho, function(mult)
+    determinant(update(C2, wrld_1deg, mult), sqrt = FALSE)$modulus))
+stopifnot(all.equal(MJ0, MJ2))
 
 
 
