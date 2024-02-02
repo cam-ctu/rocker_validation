@@ -1,0 +1,46 @@
+---
+title: "validation"
+output: html_document
+
+---
+
+# Background
+
+R is an open source and free software environment for statistical computing and graphics.
+It can be readily downloaded from <http://cran.ma.imperial.ac.uk/> or other mirror sites.
+A position paper on its ability to meet FDA and EME regulatory requirements for Clinical Trials  is provided in the R-FDA.pdf appendix and the R-SDLC.pdf gives an overview of the development cycle.
+Internal tools are provided to check that an installation is successful. These function by running pre-written scripts to a) check that they run without errors b) the output that is produced matches up to pre-saved output files supplied with the download.
+
+<https://cran.ma.imperial.ac.uk/doc/manuals/r-release/R-admin.html#Testing-a-Unix_002dalike-Installation>
+
+
+
+
+```{r config }
+knitr::opts_chunk$set(echo = TRUE, warning=TRUE, results = TRUE, error = TRUE, message=TRUE)
+unlink("home_tests",recursive = TRUE, force = TRUE)
+unlink("base_tests",recursive = TRUE)
+unlink("recommended_tests",recursive = TRUE)
+dir.create("home_tests")
+dir.create("base_tests")
+dir.create("recommended_tests")
+```
+
+Running the installation tests as per the manual
+
+```{r tests}
+Sys.setenv(LC_COLLATE = "C", LC_TIME="C", LANGUAGE = "en")
+success_basic <- tools::testInstalledBasic("both")
+success_base <- tools::testInstalledPackages(scope = "base", outDir ="base_tests")
+success_recommended <- tools::testInstalledPackages(scope = "recommended", outDir ="recommended_tests" )
+test_dir <- paste0(R.home(),"/tests")
+fs::dir_copy(test_dir, "home_tests", overwrite = TRUE)
+```
+
+The return code from the three tests were `r success_basic`,  0 indicates success.  The outputs and comparisons from each is in the directories
+
+* home_tests
+* base_tests
+* recommended_tests
+
+
