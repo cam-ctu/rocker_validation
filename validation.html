@@ -11,7 +11,7 @@
 
 <meta name="author" content="Simon Bond" />
 
-<meta name="date" content="2024-02-02" />
+<meta name="date" content="2024-02-06" />
 
 <title>R/Docker Installation Testing</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">R/Docker Installation Testing</h1>
 <h4 class="author">Simon Bond</h4>
-<h4 class="date">02 Feb 2024</h4>
+<h4 class="date">06 Feb 2024</h4>
 
 </div>
 
@@ -390,14 +390,22 @@ output files supplied with the download.</p>
 ## version.string R version 4.3.2 (2023-10-31)
 ## nickname       Eye Holes</code></pre>
 <pre class="r"><code>Sys.info()</code></pre>
-<pre><code>##                              sysname                              release 
-##                              &quot;Linux&quot; &quot;5.15.133.1-microsoft-standard-WSL2&quot; 
-##                              version                             nodename 
-## &quot;#1 SMP Thu Oct 5 21:02:42 UTC 2023&quot;                       &quot;91b8012cd88d&quot; 
-##                              machine                                login 
-##                             &quot;x86_64&quot;                            &quot;unknown&quot; 
-##                                 user                       effective_user 
-##                            &quot;rstudio&quot;                            &quot;rstudio&quot;</code></pre>
+<pre><code>##                                        sysname 
+##                                        &quot;Linux&quot; 
+##                                        release 
+##                            &quot;5.15.0-92-generic&quot; 
+##                                        version 
+## &quot;#102-Ubuntu SMP Wed Jan 10 09:33:48 UTC 2024&quot; 
+##                                       nodename 
+##                                 &quot;21c628e01fd5&quot; 
+##                                        machine 
+##                                       &quot;x86_64&quot; 
+##                                          login 
+##                                      &quot;unknown&quot; 
+##                                           user 
+##                                      &quot;rstudio&quot; 
+##                                 effective_user 
+##                                      &quot;rstudio&quot;</code></pre>
 <pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, warning=TRUE, results = &quot;asis&quot;, error = TRUE, message=TRUE,
                       fig.keep = &quot;none&quot;
                       )
@@ -441,7 +449,8 @@ success_basic &lt;- tools::testInstalledBasic(&quot;both&quot;)</code></pre>
 ##   running code in &#39;print-tests.R&#39;
 ##   comparing &#39;print-tests.Rout&#39; to &#39;print-tests.Rout.save&#39; ... OK
 ##   running code in &#39;lapack.R&#39;
-##   comparing &#39;lapack.Rout&#39; to &#39;lapack.Rout.save&#39; ...  running code in &#39;datasets.R&#39;
+##   comparing &#39;lapack.Rout&#39; to &#39;lapack.Rout.save&#39; ... OK
+##   running code in &#39;datasets.R&#39;
 ##   comparing &#39;datasets.Rout&#39; to &#39;datasets.Rout.save&#39; ... OK
 ##   running code in &#39;datetime.R&#39;
 ##   comparing &#39;datetime.Rout&#39; to &#39;datetime.Rout.save&#39; ... OK
@@ -517,16 +526,16 @@ success_basic &lt;- tools::testInstalledBasic(&quot;both&quot;)</code></pre>
 ##   comparing &#39;tools-Ex.Rout&#39; to &#39;tools-Ex.Rout.save&#39; ... OK
 ## Running specific tests for package &#39;tools&#39;
 ##   Running &#39;QC.R&#39;
-##   Running &#39;Rd.R&#39;
 ##   Running &#39;Rd2HTML.R&#39;
+##   Running &#39;Rd.R&#39;
 ##   Running &#39;S3.R&#39;
 ##   Running &#39;undoc.R&#39;
 ## Testing examples for package &#39;utils&#39;
 ## Running specific tests for package &#39;utils&#39;
-##   Running &#39;Sweave-tst.R&#39;
 ##   Running &#39;charclass.R&#39;
 ##   Running &#39;completion.R&#39;
 ##   Running &#39;relist.R&#39;
+##   Running &#39;Sweave-tst.R&#39;
 ## Running vignettes for package &#39;utils&#39;
 ##   Running &#39;Sweave.Rnw&#39;
 ## Testing examples for package &#39;grDevices&#39;
@@ -545,7 +554,6 @@ success_basic &lt;- tools::testInstalledBasic(&quot;both&quot;)</code></pre>
 ## Testing examples for package &#39;stats&#39;
 ##   comparing &#39;stats-Ex.Rout&#39; to &#39;stats-Ex.Rout.save&#39; ... OK
 ## Running specific tests for package &#39;stats&#39;
-##   Running &#39;NLSstClosest.R&#39;
 ##   Running &#39;arimaML.R&#39;
 ##   Running &#39;bandwidth.R&#39;
 ##   comparing &#39;bandwidth.Rout&#39; to &#39;bandwidth.Rout.save&#39; ... OK
@@ -561,6 +569,7 @@ success_basic &lt;- tools::testInstalledBasic(&quot;both&quot;)</code></pre>
 ##   Running &#39;nlm.R&#39;
 ##   Running &#39;nls.R&#39;
 ##   comparing &#39;nls.Rout&#39; to &#39;nls.Rout.save&#39; ... OK
+##   Running &#39;NLSstClosest.R&#39;
 ##   Running &#39;offsets.R&#39;
 ##   Running &#39;ppr.R&#39;
 ##   Running &#39;simulate.R&#39;
@@ -574,7 +583,6 @@ success_basic &lt;- tools::testInstalledBasic(&quot;both&quot;)</code></pre>
 ##   comparing &#39;datasets-Ex.Rout&#39; to &#39;datasets-Ex.Rout.save&#39; ... OK
 ## Testing examples for package &#39;methods&#39;
 ## Running specific tests for package &#39;methods&#39;
-##   Running &#39;S3.R&#39;
 ##   Running &#39;basicRefClass.R&#39;
 ##   Running &#39;duplicateClass.R&#39;
 ##   Running &#39;envRefClass.R&#39;
@@ -583,6 +591,7 @@ success_basic &lt;- tools::testInstalledBasic(&quot;both&quot;)</code></pre>
 ##   Running &#39;namesAndSlots.R&#39;
 ##   Running &#39;nextWithDots.R&#39;
 ##   Running &#39;refClassExample.R&#39;
+##   Running &#39;S3.R&#39;
 ##   Running &#39;testConditionalIs.R&#39;
 ##   Running &#39;testGroupGeneric.R&#39;
 ##   Running &#39;testIs.R&#39;
@@ -663,8 +672,8 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   Running &#39;cov.mcd.R&#39;
 ##   Running &#39;fitdistr.R&#39;
 ##   comparing &#39;fitdistr.Rout&#39; to &#39;fitdistr.Rout.save&#39; ... OK
-##   Running &#39;glm.nb.R&#39;
 ##   Running &#39;glmmPQL.R&#39;
+##   Running &#39;glm.nb.R&#39;
 ##   Running &#39;hubers.R&#39;
 ##   Running &#39;lme.R&#39;
 ##   Running &#39;polr.R&#39;
@@ -675,7 +684,6 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   Running &#39;scripts.R&#39;
 ## Testing examples for package &#39;lattice&#39;
 ## Running specific tests for package &#39;lattice&#39;
-##   Running &#39;MASSch04.R&#39;
 ##   Running &#39;auto-key.R&#39;
 ##   Running &#39;barchart-width.R&#39;
 ##   Running &#39;call.R&#39;
@@ -684,6 +692,7 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   Running &#39;dotplotscoping.R&#39;
 ##   Running &#39;fontsize.R&#39;
 ##   Running &#39;levelplot.R&#39;
+##   Running &#39;MASSch04.R&#39;
 ##   Running &#39;scales.R&#39;
 ##   Running &#39;shade-wireframe.R&#39;
 ##   Running &#39;summary.R&#39;
@@ -701,12 +710,11 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ## 
 ## Testing examples for package &#39;Matrix&#39;
 ## Running specific tests for package &#39;Matrix&#39;
-##   Running &#39;Class+Meth.R&#39;
-##   Running &#39;Simple.R&#39;
 ##   Running &#39;abIndex-tsts.R&#39;
 ##   Running &#39;base-matrix-fun.R&#39;
 ##   Running &#39;bind.R&#39;
 ##   comparing &#39;bind.Rout&#39; to &#39;bind.Rout.save&#39; ... OK
+##   Running &#39;Class+Meth.R&#39;
 ##   Running &#39;dg_Matrix.R&#39;
 ##   Running &#39;dpo-test.R&#39;
 ##   Running &#39;dtpMatrix.R&#39;
@@ -718,6 +726,7 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   Running &#39;matr-exp.R&#39;
 ##   Running &#39;other-pkgs.R&#39;
 ##   Running &#39;packed-unpacked.R&#39;
+##   Running &#39;Simple.R&#39;
 ##   Running &#39;spModel.matrix.R&#39;
 ##   Running &#39;symmDN.R&#39;
 ##   Running &#39;validObj.R&#39;
@@ -747,13 +756,13 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   Running &#39;getVarCov.R&#39;
 ##   Running &#39;gls.R&#39;
 ##   Running &#39;gnls-ch8.R&#39;
-##   Running &#39;lmList.R&#39;
 ##   Running &#39;lme.R&#39;
 ##   comparing &#39;lme.Rout&#39; to &#39;lme.Rout.save&#39; ... OK
+##   Running &#39;lmList.R&#39;
 ##   Running &#39;missing.R&#39;
 ##   comparing &#39;missing.Rout&#39; to &#39;missing.Rout.save&#39; ... OK
-##   Running &#39;nlme.R&#39;
 ##   Running &#39;nlme2.R&#39;
+##   Running &#39;nlme.R&#39;
 ##   Running &#39;predict.lme.R&#39;
 ##   Running &#39;scoping.R&#39;
 ##   Running &#39;sigma-fixed-etc.R&#39;
@@ -791,16 +800,14 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   comparing &#39;checkSurv2.Rout&#39; to &#39;checkSurv2.Rout.save&#39; ... OK
 ##   Running &#39;clogit.R&#39;
 ##   comparing &#39;clogit.Rout&#39; to &#39;clogit.Rout.save&#39; ... OK
-##   Running &#39;concordance.R&#39;
-##   comparing &#39;concordance.Rout&#39; to &#39;concordance.Rout.save&#39; ... OK
 ##   Running &#39;concordance2.R&#39;
 ##   comparing &#39;concordance2.Rout&#39; to &#39;concordance2.Rout.save&#39; ... OK
 ##   Running &#39;concordance3.R&#39;
 ##   comparing &#39;concordance3.Rout&#39; to &#39;concordance3.Rout.save&#39; ... OK
+##   Running &#39;concordance.R&#39;
+##   comparing &#39;concordance.Rout&#39; to &#39;concordance.Rout.save&#39; ... OK
 ##   Running &#39;counting.R&#39;
 ##   comparing &#39;counting.Rout&#39; to &#39;counting.Rout.save&#39; ... OK
-##   Running &#39;coxsurv.R&#39;
-##   comparing &#39;coxsurv.Rout&#39; to &#39;coxsurv.Rout.save&#39; ... OK
 ##   Running &#39;coxsurv2.R&#39;
 ##   comparing &#39;coxsurv2.Rout&#39; to &#39;coxsurv2.Rout.save&#39; ... OK
 ##   Running &#39;coxsurv3.R&#39;
@@ -811,6 +818,8 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   comparing &#39;coxsurv5.Rout&#39; to &#39;coxsurv5.Rout.save&#39; ... OK
 ##   Running &#39;coxsurv6.R&#39;
 ##   comparing &#39;coxsurv6.Rout&#39; to &#39;coxsurv6.Rout.save&#39; ... OK
+##   Running &#39;coxsurv.R&#39;
+##   comparing &#39;coxsurv.Rout&#39; to &#39;coxsurv.Rout.save&#39; ... OK
 ##   Running &#39;detail.R&#39;
 ##   comparing &#39;detail.Rout&#39; to &#39;detail.Rout.save&#39; ... OK
 ##   Running &#39;difftest.R&#39;
@@ -821,16 +830,20 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   comparing &#39;doweight.Rout&#39; to &#39;doweight.Rout.save&#39; ... OK
 ##   Running &#39;dropspecial.R&#39;
 ##   comparing &#39;dropspecial.Rout&#39; to &#39;dropspecial.Rout.save&#39; ... OK
-##   Running &#39;expected.R&#39;
-##   comparing &#39;expected.Rout&#39; to &#39;expected.Rout.save&#39; ... OK
 ##   Running &#39;expected2.R&#39;
 ##   comparing &#39;expected2.Rout&#39; to &#39;expected2.Rout.save&#39; ... OK
-##   Running &#39;factor.R&#39;
-##   comparing &#39;factor.Rout&#39; to &#39;factor.Rout.save&#39; ... OK
+##   Running &#39;expected.R&#39;
+##   comparing &#39;expected.Rout&#39; to &#39;expected.Rout.save&#39; ... OK
 ##   Running &#39;factor2.R&#39;
 ##   comparing &#39;factor2.Rout&#39; to &#39;factor2.Rout.save&#39; ... OK
+##   Running &#39;factor.R&#39;
+##   comparing &#39;factor.Rout&#39; to &#39;factor.Rout.save&#39; ... OK
 ##   Running &#39;finegray.R&#39;
 ##   comparing &#39;finegray.Rout&#39; to &#39;finegray.Rout.save&#39; ... OK
+##   Running &#39;frailty.R&#39;
+##   comparing &#39;frailty.Rout&#39; to &#39;frailty.Rout.save&#39; ... OK
+##   Running &#39;frank.R&#39;
+##   comparing &#39;frank.Rout&#39; to &#39;frank.Rout.save&#39; ... OK
 ##   Running &#39;fr_cancer.R&#39;
 ##   comparing &#39;fr_cancer.Rout&#39; to &#39;fr_cancer.Rout.save&#39; ... OK
 ##   Running &#39;fr_kidney.R&#39;
@@ -845,10 +858,6 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   comparing &#39;fr_resid.Rout&#39; to &#39;fr_resid.Rout.save&#39; ... OK
 ##   Running &#39;fr_simple.R&#39;
 ##   comparing &#39;fr_simple.Rout&#39; to &#39;fr_simple.Rout.save&#39; ... OK
-##   Running &#39;frailty.R&#39;
-##   comparing &#39;frailty.Rout&#39; to &#39;frailty.Rout.save&#39; ... OK
-##   Running &#39;frank.R&#39;
-##   comparing &#39;frank.Rout&#39; to &#39;frank.Rout.save&#39; ... OK
 ##   Running &#39;infcox.R&#39;
 ##   comparing &#39;infcox.Rout&#39; to &#39;infcox.Rout.save&#39; ... OK
 ##   Running &#39;jasa.R&#39;
@@ -887,8 +896,14 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   comparing &#39;pyear.Rout&#39; to &#39;pyear.Rout.save&#39; ... OK
 ##   Running &#39;quantile.R&#39;
 ##   comparing &#39;quantile.Rout&#39; to &#39;quantile.Rout.save&#39; ... OK
+##   Running &#39;ratetable.R&#39;
+##   comparing &#39;ratetable.Rout&#39; to &#39;ratetable.Rout.save&#39; ... OK
+##   Running &#39;residsf.R&#39;
+##   comparing &#39;residsf.Rout&#39; to &#39;residsf.Rout.save&#39; ... OK
 ##   Running &#39;r_lung.R&#39;
 ##   comparing &#39;r_lung.Rout&#39; to &#39;r_lung.Rout.save&#39; ... OK
+##   Running &#39;royston.R&#39;
+##   comparing &#39;royston.Rout&#39; to &#39;royston.Rout.save&#39; ... OK
 ##   Running &#39;r_resid.R&#39;
 ##   comparing &#39;r_resid.Rout&#39; to &#39;r_resid.Rout.save&#39; ... OK
 ##   Running &#39;r_sas.R&#39;
@@ -901,16 +916,10 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   comparing &#39;r_strata.Rout&#39; to &#39;r_strata.Rout.save&#39; ... OK
 ##   Running &#39;r_tdist.R&#39;
 ##   comparing &#39;r_tdist.Rout&#39; to &#39;r_tdist.Rout.save&#39; ... OK
-##   Running &#39;r_user.R&#39;
-##   comparing &#39;r_user.Rout&#39; to &#39;r_user.Rout.save&#39; ... OK
-##   Running &#39;ratetable.R&#39;
-##   comparing &#39;ratetable.Rout&#39; to &#39;ratetable.Rout.save&#39; ... OK
-##   Running &#39;residsf.R&#39;
-##   comparing &#39;residsf.Rout&#39; to &#39;residsf.Rout.save&#39; ... OK
-##   Running &#39;royston.R&#39;
-##   comparing &#39;royston.Rout&#39; to &#39;royston.Rout.save&#39; ... OK
 ##   Running &#39;rttright.R&#39;
 ##   comparing &#39;rttright.Rout&#39; to &#39;rttright.Rout.save&#39; ... OK
+##   Running &#39;r_user.R&#39;
+##   comparing &#39;r_user.Rout&#39; to &#39;r_user.Rout.save&#39; ... OK
 ##   Running &#39;singtest.R&#39;
 ##   comparing &#39;singtest.Rout&#39; to &#39;singtest.Rout.save&#39; ... OK
 ##   Running &#39;strata2.R&#39;
@@ -919,42 +928,42 @@ success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended
 ##   comparing &#39;stratatest.Rout&#39; to &#39;stratatest.Rout.save&#39; ... OK
 ##   Running &#39;summary_survfit.R&#39;
 ##   comparing &#39;summary_survfit.Rout&#39; to &#39;summary_survfit.Rout.save&#39; ... OK
-##   Running &#39;surv.R&#39;
-##   comparing &#39;surv.Rout&#39; to &#39;surv.Rout.save&#39; ... OK
-##   Running &#39;survSplit.R&#39;
-##   comparing &#39;survSplit.Rout&#39; to &#39;survSplit.Rout.save&#39; ... OK
 ##   Running &#39;survcheck.R&#39;
 ##   comparing &#39;survcheck.Rout&#39; to &#39;survcheck.Rout.save&#39; ... OK
 ##   Running &#39;survfit1.R&#39;
 ##   comparing &#39;survfit1.Rout&#39; to &#39;survfit1.Rout.save&#39; ... OK
 ##   Running &#39;survfit2.R&#39;
 ##   comparing &#39;survfit2.Rout&#39; to &#39;survfit2.Rout.save&#39; ... OK
+##   Running &#39;surv.R&#39;
+##   comparing &#39;surv.Rout&#39; to &#39;surv.Rout.save&#39; ... OK
 ##   Running &#39;survreg1.R&#39;
 ##   comparing &#39;survreg1.Rout&#39; to &#39;survreg1.Rout.save&#39; ... OK
 ##   Running &#39;survreg2.R&#39;
 ##   comparing &#39;survreg2.Rout&#39; to &#39;survreg2.Rout.save&#39; ... OK
+##   Running &#39;survSplit.R&#39;
+##   comparing &#39;survSplit.Rout&#39; to &#39;survSplit.Rout.save&#39; ... OK
 ##   Running &#39;survtest.R&#39;
 ##   comparing &#39;survtest.Rout&#39; to &#39;survtest.Rout.save&#39; ... OK
-##   Running &#39;testci.R&#39;
-##   comparing &#39;testci.Rout&#39; to &#39;testci.Rout.save&#39; ... OK
 ##   Running &#39;testci2.R&#39;
 ##   comparing &#39;testci2.Rout&#39; to &#39;testci2.Rout.save&#39; ... OK
+##   Running &#39;testci.R&#39;
+##   comparing &#39;testci.Rout&#39; to &#39;testci.Rout.save&#39; ... OK
 ##   Running &#39;testnull.R&#39;
 ##   comparing &#39;testnull.Rout&#39; to &#39;testnull.Rout.save&#39; ... OK
 ##   Running &#39;testreg.R&#39;
 ##   comparing &#39;testreg.Rout&#39; to &#39;testreg.Rout.save&#39; ... OK
 ##   Running &#39;tiedtime.R&#39;
 ##   comparing &#39;tiedtime.Rout&#39; to &#39;tiedtime.Rout.save&#39; ... OK
-##   Running &#39;tmerge.R&#39;
-##   comparing &#39;tmerge.Rout&#39; to &#39;tmerge.Rout.save&#39; ... OK
 ##   Running &#39;tmerge2.R&#39;
 ##   comparing &#39;tmerge2.Rout&#39; to &#39;tmerge2.Rout.save&#39; ... OK
 ##   Running &#39;tmerge3.R&#39;
 ##   comparing &#39;tmerge3.Rout&#39; to &#39;tmerge3.Rout.save&#39; ... OK
-##   Running &#39;tt.R&#39;
-##   comparing &#39;tt.Rout&#39; to &#39;tt.Rout.save&#39; ... OK
+##   Running &#39;tmerge.R&#39;
+##   comparing &#39;tmerge.Rout&#39; to &#39;tmerge.Rout.save&#39; ... OK
 ##   Running &#39;tt2.R&#39;
 ##   comparing &#39;tt2.Rout&#39; to &#39;tt2.Rout.save&#39; ... OK
+##   Running &#39;tt.R&#39;
+##   comparing &#39;tt.Rout&#39; to &#39;tt.Rout.save&#39; ... OK
 ##   Running &#39;turnbull.R&#39;
 ##   comparing &#39;turnbull.Rout&#39; to &#39;turnbull.Rout.save&#39; ... OK
 ##   Running &#39;update.R&#39;
@@ -1024,9 +1033,9 @@ Component 2: 1 string mismatch &gt;”</p>
 ## Running specific tests for package &#39;cluster&#39;
 ##   Running &#39;agnes-ex.R&#39;
 ##   comparing &#39;agnes-ex.Rout&#39; to &#39;agnes-ex.Rout.save&#39; ... OK
+##   Running &#39;clara-ex.R&#39;
 ##   Running &#39;clara-NAs.R&#39;
 ##   comparing &#39;clara-NAs.Rout&#39; to &#39;clara-NAs.Rout.save&#39; ... OK
-##   Running &#39;clara-ex.R&#39;
 ##   Running &#39;clara.R&#39;
 ##   comparing &#39;clara.Rout&#39; to &#39;clara.Rout.save&#39; ... OK
 ##   Running &#39;clusplot-out.R&#39;
@@ -1052,8 +1061,6 @@ Component 2: 1 string mismatch &gt;”</p>
 ##   Running &#39;tests.R&#39;
 ## Testing examples for package &#39;foreign&#39;
 ## Running specific tests for package &#39;foreign&#39;
-##   Running &#39;S3.R&#39;
-##   comparing &#39;S3.Rout&#39; to &#39;S3.Rout.save&#39; ... OK
 ##   Running &#39;arff.R&#39;
 ##   comparing &#39;arff.Rout&#39; to &#39;arff.Rout.save&#39; ... OK
 ##   Running &#39;download.R&#39;
@@ -1063,6 +1070,8 @@ Component 2: 1 string mismatch &gt;”</p>
 ##   comparing &#39;mval_bug.Rout&#39; to &#39;mval_bug.Rout.save&#39; ... OK
 ##   Running &#39;octave.R&#39;
 ##   comparing &#39;octave.Rout&#39; to &#39;octave.Rout.save&#39; ... OK
+##   Running &#39;S3.R&#39;
+##   comparing &#39;S3.Rout&#39; to &#39;S3.Rout.save&#39; ... OK
 ##   Running &#39;sas.R&#39;
 ##   Running &#39;spss.R&#39;
 ##   comparing &#39;spss.Rout&#39; to &#39;spss.Rout.save&#39; ... OK
@@ -1095,14 +1104,14 @@ Component 2: 1 string mismatch &gt;”</p>
 ##   comparing &#39;rescale.Rout&#39; to &#39;rescale.Rout.save&#39; ... OK
 ##   Running &#39;testall.R&#39;
 ##   comparing &#39;testall.Rout&#39; to &#39;testall.Rout.save&#39; ... OK
-##   Running &#39;treble.R&#39;
-##   comparing &#39;treble.Rout&#39; to &#39;treble.Rout.save&#39; ... OK
 ##   Running &#39;treble2.R&#39;
 ##   comparing &#39;treble2.Rout&#39; to &#39;treble2.Rout.save&#39; ... OK
 ##   Running &#39;treble3.R&#39;
 ##   comparing &#39;treble3.Rout&#39; to &#39;treble3.Rout.save&#39; ... OK
 ##   Running &#39;treble4.R&#39;
 ##   comparing &#39;treble4.Rout&#39; to &#39;treble4.Rout.save&#39; ... OK
+##   Running &#39;treble.R&#39;
+##   comparing &#39;treble.Rout&#39; to &#39;treble.Rout.save&#39; ... OK
 ##   Running &#39;usersplits.R&#39;
 ##   comparing &#39;usersplits.Rout&#39; to &#39;usersplits.Rout.save&#39; ... OK
 ##   Running &#39;xpred1.R&#39;

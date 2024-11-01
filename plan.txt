@@ -1,0 +1,18 @@
+
+reconcile this independent repo, with the validation branch and folder in rocker-versions2.
+
+Produce a basic report 
+
+0)  delete all previous output.
+a) test base installation and packages
+b) test recommended packages
+
+c)  the extra packages shipped by default in cctu-rocker.  This uses extra_package_test.R and test_pkg.R  to grab teh extra test files and run them. The rockker default doesn't
+install tests..
+
+d) This should then be intended to be run on each persons docker installation.   The github version will .gitignore the output files, but shoudl be kept on users' versions.
+
+e)  Make it work on github via a workflow. Install rocker version xx, run teh validations,  output report  to the wiki directory? Do somethign clever each day to check if a new version has come out/rebuild the latest/ or repeat if its' not there.
+
+f)  Go to R_validation riskassessment/riskmetric.  Build reports for each package. 
+
