@@ -1,6 +1,0 @@
-exportMethods(
-    "show" 
-)
-exportClasses(
-    "foo" 
-)
