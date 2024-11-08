@@ -1,0 +1,24 @@
+---
+title: "qd"
+author: "Simon Bond"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=TRUE, results = "asis", error = TRUE, message=TRUE,
+                      fig.keep = "none"
+                      )
+```
+
+# whatever
+
+
+
+```{r loop}
+source("test_pkg.R")
+pkg_list <- "abind"
+long_hand <- lapply( pkg_list, function(pkg){ knitr::knit_expand("package_validate.Rmd")})
+```
+
+`r knitr::knit_child(text=unlist(long_hand))`

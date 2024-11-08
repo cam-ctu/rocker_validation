@@ -1,0 +1,20 @@
+## {{pkg}}
+
+
+```{r {{pkg}} }
+
+
+dl <- download.packages("{{pkg}}", destdir="package",type="source",
+                        method="wget")# wget was what solved this.. was getting binary versions
+
+#unzip the tar.gz file
+# 
+unlink("package/{{pkg}}")
+untar(dl[,2], exdir = "package", restore_times=FALSE)
+# modify the testInstalledpackages to use the /test fold from within pack.
+result <- test_pkg("{{pkg}}", outDir="package/{{pkg}}", test_path="tests",
+                   types=c("examples","tests")
+                   )
+print(result)
+```
+
