@@ -88,7 +88,9 @@ test_pkg <- function (pkg, lib.loc = NULL, outDir = ".", types = c("examples",
     else warning(gettextf("no examples found for package %s", 
                           sQuote(pkg)), call. = FALSE, domain = NA)
   }
+  message("checks for tests")
   if ("tests" %in% types && dir.exists(d <- test_path) ){
+    message("DOing the tests")
     this <- paste0(pkg, "-tests")
     unlink(this, recursive = TRUE)
     dir.create(this)
