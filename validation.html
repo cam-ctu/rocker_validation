@@ -11,7 +11,7 @@
 
 <meta name="author" content="Simon Bond" />
 
-<meta name="date" content="2024-02-06" />
+<meta name="date" content="2024-11-11" />
 
 <title>R/Docker Installation Testing</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">R/Docker Installation Testing</h1>
 <h4 class="author">Simon Bond</h4>
-<h4 class="date">06 Feb 2024</h4>
+<h4 class="date">11 Nov 2024</h4>
 
 </div>
 
@@ -372,7 +372,7 @@ output files supplied with the download.</p>
 </div>
 <div id="r-system" class="section level1">
 <h1>R System</h1>
-<p>Local CRSid: sjb277</p>
+<p>Local CRSid:</p>
 <pre class="r"><code>R.version</code></pre>
 <pre><code>##                _                           
 ## platform       x86_64-pc-linux-gnu         
@@ -381,31 +381,23 @@ output files supplied with the download.</p>
 ## system         x86_64, linux-gnu           
 ## status                                     
 ## major          4                           
-## minor          3.2                         
-## year           2023                        
-## month          10                          
-## day            31                          
-## svn rev        85441                       
+## minor          4.0                         
+## year           2024                        
+## month          04                          
+## day            24                          
+## svn rev        86474                       
 ## language       R                           
-## version.string R version 4.3.2 (2023-10-31)
-## nickname       Eye Holes</code></pre>
+## version.string R version 4.4.0 (2024-04-24)
+## nickname       Puppy Cup</code></pre>
 <pre class="r"><code>Sys.info()</code></pre>
-<pre><code>##                                        sysname 
-##                                        &quot;Linux&quot; 
-##                                        release 
-##                            &quot;5.15.0-92-generic&quot; 
-##                                        version 
-## &quot;#102-Ubuntu SMP Wed Jan 10 09:33:48 UTC 2024&quot; 
-##                                       nodename 
-##                                 &quot;21c628e01fd5&quot; 
-##                                        machine 
-##                                       &quot;x86_64&quot; 
-##                                          login 
-##                                      &quot;unknown&quot; 
-##                                           user 
-##                                      &quot;rstudio&quot; 
-##                                 effective_user 
-##                                      &quot;rstudio&quot;</code></pre>
+<pre><code>##                               sysname                               release 
+##                               &quot;Linux&quot;  &quot;5.15.146.1-microsoft-standard-WSL2&quot; 
+##                               version                              nodename 
+## &quot;#1 SMP Thu Jan 11 04:09:03 UTC 2024&quot;                        &quot;25b6488dae68&quot; 
+##                               machine                                 login 
+##                              &quot;x86_64&quot;                             &quot;unknown&quot; 
+##                                  user                        effective_user 
+##                             &quot;rstudio&quot;                             &quot;rstudio&quot;</code></pre>
 <pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, warning=TRUE, results = &quot;asis&quot;, error = TRUE, message=TRUE,
                       fig.keep = &quot;none&quot;
                       )
@@ -419,244 +411,13 @@ dir.create(base_dir)
 dir.create(recommended_dir)</code></pre>
 <p>Running the installation tests as per the manual</p>
 <pre class="r"><code>Sys.setenv(LC_COLLATE = &quot;C&quot;, LC_TIME=&quot;C&quot;, LANGUAGE = &quot;en&quot;)
-success_basic &lt;- tools::testInstalledBasic(&quot;both&quot;)</code></pre>
-<pre><code>## running strict specific tests</code></pre>
-<pre><code>##   running code in &#39;eval-etc.R&#39;</code></pre>
-<pre><code>##   comparing &#39;eval-etc.Rout&#39; to &#39;eval-etc.Rout.save&#39; ... OK
-##   running code in &#39;simple-true.R&#39;
-##   comparing &#39;simple-true.Rout&#39; to &#39;simple-true.Rout.save&#39; ... OK
-##   running code in &#39;arith-true.R&#39;
-##   comparing &#39;arith-true.Rout&#39; to &#39;arith-true.Rout.save&#39; ... OK
-##   running code in &#39;lm-tests.R&#39;
-##   comparing &#39;lm-tests.Rout&#39; to &#39;lm-tests.Rout.save&#39; ... OK
-##   running code in &#39;ok-errors.R&#39;
-##   comparing &#39;ok-errors.Rout&#39; to &#39;ok-errors.Rout.save&#39; ... OK
-##   running code in &#39;method-dispatch.R&#39;
-##   comparing &#39;method-dispatch.Rout&#39; to &#39;method-dispatch.Rout.save&#39; ... OK
-##   running code in &#39;array-subset.R&#39;
-##   running code in &#39;p-r-random-tests.R&#39;
-##   comparing &#39;p-r-random-tests.Rout&#39; to &#39;p-r-random-tests.Rout.save&#39; ... OK
-##   running code in &#39;d-p-q-r-tst-2.R&#39;
-##   running code in &#39;any-all.R&#39;
-##   comparing &#39;any-all.Rout&#39; to &#39;any-all.Rout.save&#39; ... OK
-##   running code in &#39;structure.R&#39;
-##   comparing &#39;structure.Rout&#39; to &#39;structure.Rout.save&#39; ... OK
-##   running code in &#39;d-p-q-r-tests.R&#39;
-##   comparing &#39;d-p-q-r-tests.Rout&#39; to &#39;d-p-q-r-tests.Rout.save&#39; ... OK
-## running sloppy specific tests
-##   running code in &#39;complex.R&#39;
-##   comparing &#39;complex.Rout&#39; to &#39;complex.Rout.save&#39; ... OK
-##   running code in &#39;print-tests.R&#39;
-##   comparing &#39;print-tests.Rout&#39; to &#39;print-tests.Rout.save&#39; ... OK
-##   running code in &#39;lapack.R&#39;
-##   comparing &#39;lapack.Rout&#39; to &#39;lapack.Rout.save&#39; ... OK
-##   running code in &#39;datasets.R&#39;
-##   comparing &#39;datasets.Rout&#39; to &#39;datasets.Rout.save&#39; ... OK
-##   running code in &#39;datetime.R&#39;
-##   comparing &#39;datetime.Rout&#39; to &#39;datetime.Rout.save&#39; ... OK
-##   running code in &#39;iec60559.R&#39;
-##   comparing &#39;iec60559.Rout&#39; to &#39;iec60559.Rout.save&#39; ... OK
-## running regression tests
-##   running code in &#39;reg-tests-1a.R&#39;
-##   running code in &#39;reg-tests-1b.R&#39;
-##   running code in &#39;reg-tests-1c.R&#39;
-##   running code in &#39;reg-tests-2.R&#39;
-##   comparing &#39;reg-tests-2.Rout&#39; to &#39;reg-tests-2.Rout.save&#39; ... OK
-##   running code in &#39;reg-tests-1d.R&#39;
-##   running code in &#39;reg-examples1.R&#39;
-##   running code in &#39;reg-examples2.R&#39;
-##   running code in &#39;reg-packages.R&#39;
-##   running code in &#39;p-qbeta-strict-tst.R&#39;
-##   running code in &#39;reg-IO.R&#39;
-##   comparing &#39;reg-IO.Rout&#39; to &#39;reg-IO.Rout.save&#39; ... OK
-##   running code in &#39;reg-IO2.R&#39;
-##   comparing &#39;reg-IO2.Rout&#39; to &#39;reg-IO2.Rout.save&#39; ... OK
-##   running code in &#39;reg-plot.R&#39;
-##   comparing &#39;reg-plot.pdf&#39; to &#39;reg-plot.pdf.save&#39; ...comparing PDF files requires useDiff = TRUE
-## OK
-##   running code in &#39;reg-S4.R&#39;
-##   comparing &#39;reg-S4.Rout&#39; to &#39;reg-S4.Rout.save&#39; ... OK
-##   running code in &#39;reg-BLAS.R&#39;
-##   running code in &#39;reg-translation.R&#39;
-##   running code in &#39;reg-tests-3.R&#39;
-##   comparing &#39;reg-tests-3.Rout&#39; to &#39;reg-tests-3.Rout.save&#39; ... OK
-##   running code in &#39;reg-examples3.R&#39;
-##   comparing &#39;reg-examples3.Rout&#39; to &#39;reg-examples3.Rout.save&#39; ... OK
-## running tests of plotting Latin-1
-##   expect failure or some differences if not in a Latin or UTF-8 locale
-##   running code in &#39;reg-plot-latin1.R&#39;
-##   comparing &#39;reg-plot-latin1.pdf&#39; to &#39;reg-plot-latin1.pdf.save&#39; ...comparing PDF files requires useDiff = TRUE
-## OK
-## running tests of date-time printing
-##  expect platform-specific differences
-##   running code in &#39;datetime2.R&#39;
-##   comparing &#39;datetime2.Rout&#39; to &#39;datetime2.Rout.save&#39; ...running tests of consistency of as/is.*
-## creating &#39;isas-tests.R&#39;
-##   running code in &#39;isas-tests.R&#39;
-##   comparing &#39;isas-tests.Rout&#39; to &#39;isas-tests.Rout.save&#39; ... OK
-## running tests of random deviate generation -- fails occasionally
-##   running code in &#39;p-r-random-tests.R&#39;
-##   comparing &#39;p-r-random-tests.Rout&#39; to &#39;p-r-random-tests.Rout.save&#39; ... OK
-## running tests demos from base and stats
-##   running code in &#39;demos.R&#39;
-##   comparing &#39;demos.Rout&#39; to &#39;demos.Rout.save&#39; ... OK
-##   running code in &#39;demos2.R&#39;
-## running tests of primitives
-##   running code in &#39;primitives.R&#39;
-## running regexp regression tests
-##   running code in &#39;utf8-regex.R&#39;
-##   running code in &#39;PCRE.R&#39;
-## running tests of CRAN tools
-##   running code in &#39;CRANtools.R&#39;
-## running tests to possibly trigger segfaults
-## creating &#39;no-segfault.R&#39;
-##   running code in &#39;no-segfault.R&#39;</code></pre>
-<pre class="r"><code>success_internet &lt;- tools::testInstalledBasic(&quot;internet&quot;)</code></pre>
-<pre><code>## running tests of Internet functions
-##   running code in &#39;internet.R&#39;
-##   comparing &#39;internet.Rout&#39; to &#39;internet.Rout.save&#39; ... OK
-## running more Internet and socket tests
-##   running code in &#39;internet2.R&#39;
-##   running code in &#39;libcurl.R&#39;</code></pre>
-<pre class="r"><code>success_base &lt;- tools::testInstalledPackages(scope = &quot;base&quot;, 
+success_basic &lt;- tools::testInstalledBasic(&quot;both&quot;)
+success_internet &lt;- tools::testInstalledBasic(&quot;internet&quot;)
+success_base &lt;- tools::testInstalledPackages(scope = &quot;base&quot;, 
                                              outDir =base_dir,
-                                             errorsAreFatal=FALSE)</code></pre>
-<pre><code>## Testing examples for package &#39;base&#39;
-## Testing examples for package &#39;tools&#39;
-##   comparing &#39;tools-Ex.Rout&#39; to &#39;tools-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;tools&#39;
-##   Running &#39;QC.R&#39;
-##   Running &#39;Rd2HTML.R&#39;
-##   Running &#39;Rd.R&#39;
-##   Running &#39;S3.R&#39;
-##   Running &#39;undoc.R&#39;
-## Testing examples for package &#39;utils&#39;
-## Running specific tests for package &#39;utils&#39;
-##   Running &#39;charclass.R&#39;
-##   Running &#39;completion.R&#39;
-##   Running &#39;relist.R&#39;
-##   Running &#39;Sweave-tst.R&#39;
-## Running vignettes for package &#39;utils&#39;
-##   Running &#39;Sweave.Rnw&#39;
-## Testing examples for package &#39;grDevices&#39;
-##   comparing &#39;grDevices-Ex.Rout&#39; to &#39;grDevices-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;grDevices&#39;
-##   Running &#39;convertColor-tests.R&#39;
-##   Running &#39;grDev-tsts.R&#39;
-##   Running &#39;palettes-tests.R&#39;
-##   Running &#39;ps-tests.R&#39;
-##   comparing &#39;ps-tests.Rout&#39; to &#39;ps-tests.Rout.save&#39; ... OK
-##   Running &#39;saved-recordPlot.R&#39;
-##   Running &#39;xfig-tests.R&#39;
-##   comparing &#39;xfig-tests.Rout&#39; to &#39;xfig-tests.Rout.save&#39; ... OK
-## Testing examples for package &#39;graphics&#39;
-##   comparing &#39;graphics-Ex.Rout&#39; to &#39;graphics-Ex.Rout.save&#39; ... OK
-## Testing examples for package &#39;stats&#39;
-##   comparing &#39;stats-Ex.Rout&#39; to &#39;stats-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;stats&#39;
-##   Running &#39;arimaML.R&#39;
-##   Running &#39;bandwidth.R&#39;
-##   comparing &#39;bandwidth.Rout&#39; to &#39;bandwidth.Rout.save&#39; ... OK
-##   Running &#39;cmdscale.R&#39;
-##   Running &#39;drop1-polr.R&#39;
-##   Running &#39;glm-etc.R&#39;
-##   Running &#39;glm.R&#39;
-##   comparing &#39;glm.Rout&#39; to &#39;glm.Rout.save&#39; ... OK
-##   Running &#39;ig_glm.R&#39;
-##   Running &#39;ks-test.R&#39;
-##   comparing &#39;ks-test.Rout&#39; to &#39;ks-test.Rout.save&#39; ... OK
-##   Running &#39;nafns.R&#39;
-##   Running &#39;nlm.R&#39;
-##   Running &#39;nls.R&#39;
-##   comparing &#39;nls.Rout&#39; to &#39;nls.Rout.save&#39; ... OK
-##   Running &#39;NLSstClosest.R&#39;
-##   Running &#39;offsets.R&#39;
-##   Running &#39;ppr.R&#39;
-##   Running &#39;simulate.R&#39;
-##   comparing &#39;simulate.Rout&#39; to &#39;simulate.Rout.save&#39; ... OK
-##   Running &#39;smooth.spline.R&#39;
-##   Running &#39;table-margins.R&#39;
-##   Running &#39;ts-tests.R&#39;
-## Running vignettes for package &#39;stats&#39;
-##   Running &#39;reshape.Rnw&#39;
-## Testing examples for package &#39;datasets&#39;
-##   comparing &#39;datasets-Ex.Rout&#39; to &#39;datasets-Ex.Rout.save&#39; ... OK
-## Testing examples for package &#39;methods&#39;
-## Running specific tests for package &#39;methods&#39;
-##   Running &#39;basicRefClass.R&#39;
-##   Running &#39;duplicateClass.R&#39;
-##   Running &#39;envRefClass.R&#39;
-##   Running &#39;fieldAssignments.R&#39;
-##   Running &#39;mixinInitialize.R&#39;
-##   Running &#39;namesAndSlots.R&#39;
-##   Running &#39;nextWithDots.R&#39;
-##   Running &#39;refClassExample.R&#39;
-##   Running &#39;S3.R&#39;
-##   Running &#39;testConditionalIs.R&#39;
-##   Running &#39;testGroupGeneric.R&#39;
-##   Running &#39;testIs.R&#39;
-## Testing examples for package &#39;grid&#39;
-##   comparing &#39;grid-Ex.Rout&#39; to &#39;grid-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;grid&#39;
-##   Running &#39;bugs.R&#39;
-##   Running &#39;clippaths.R&#39;
-##   Running &#39;compositing.R&#39;
-##   Running &#39;coords.R&#39;
-##   Running &#39;glyphs.R&#39;
-##   Running &#39;grep.R&#39;
-##   comparing &#39;grep.Rout&#39; to &#39;grep.Rout.save&#39; ... OK
-##   Running &#39;groups.R&#39;
-##   Running &#39;masks.R&#39;
-##   Running &#39;nesting.R&#39;
-##   Running &#39;paths.R&#39;
-##   Running &#39;patterns.R&#39;
-##   Running &#39;reg.R&#39;
-##   Running &#39;testls.R&#39;
-##   comparing &#39;testls.Rout&#39; to &#39;testls.Rout.save&#39; ... OK
-##   Running &#39;units.R&#39;
-## Running vignettes for package &#39;grid&#39;
-##   Running &#39;displaylist.Rnw&#39;
-##   Running &#39;frame.Rnw&#39;
-##   Running &#39;grid.Rnw&#39;
-##   Running &#39;grobs.Rnw&#39;
-##   Running &#39;interactive.Rnw&#39;
-##   Running &#39;locndimn.Rnw&#39;
-##   Running &#39;moveline.Rnw&#39;
-##   Running &#39;nonfinite.Rnw&#39;
-##   Running &#39;plotexample.Rnw&#39;
-##   Running &#39;rotated.Rnw&#39;
-##   Running &#39;saveload.Rnw&#39;
-##   Running &#39;sharing.Rnw&#39;
-##   Running &#39;viewports.Rnw&#39;
-## Testing examples for package &#39;splines&#39;
-##   comparing &#39;splines-Ex.Rout&#39; to &#39;splines-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;splines&#39;
-##   Running &#39;sparse-tst.R&#39;
-##   Running &#39;spline-tst.R&#39;
-## Testing examples for package &#39;stats4&#39;
-##   comparing &#39;stats4-Ex.Rout&#39; to &#39;stats4-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;stats4&#39;
-##   Running &#39;confint.R&#39;
-## Testing examples for package &#39;tcltk&#39;
-## Testing examples for package &#39;compiler&#39;
-## Running specific tests for package &#39;compiler&#39;
-##   Running &#39;assign.R&#39;
-##   Running &#39;basics.R&#39;
-##   Running &#39;const.R&#39;
-##   Running &#39;curexpr.R&#39;
-##   Running &#39;envir.R&#39;
-##   Running &#39;jit.R&#39;
-##   Running &#39;loop.R&#39;
-##   Running &#39;srcref.R&#39;
-##   Running &#39;switch.R&#39;
-##   Running &#39;vischk.R&#39;
-## Testing examples for package &#39;parallel&#39;
-## Running specific tests for package &#39;parallel&#39;
-##   Running &#39;Master.R&#39;
-##   Running &#39;RSeed.R&#39;
-## Running vignettes for package &#39;parallel&#39;
-##   Running &#39;parallel.Rnw&#39;</code></pre>
-<pre class="r"><code>if(success_base){
+                                             errorsAreFatal=FALSE)
+
+if(success_base){
   tools::testInstalledPackages(scope = &quot;base&quot;, 
                                              outDir =base_dir,
                                              errorsAreFatal=TRUE)
@@ -664,470 +425,8 @@ success_basic &lt;- tools::testInstalledBasic(&quot;both&quot;)</code></pre>
 
 success_recommended &lt;- tools::testInstalledPackages(scope = &quot;recommended&quot;, 
                                                     outDir =recommended_dir, 
-                                                    errorsAreFatal = FALSE)</code></pre>
-<pre><code>## Testing examples for package &#39;MASS&#39;
-##   comparing &#39;MASS-Ex.Rout&#39; to &#39;MASS-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;MASS&#39;
-##   Running &#39;confint.R&#39;
-##   Running &#39;cov.mcd.R&#39;
-##   Running &#39;fitdistr.R&#39;
-##   comparing &#39;fitdistr.Rout&#39; to &#39;fitdistr.Rout.save&#39; ... OK
-##   Running &#39;glmmPQL.R&#39;
-##   Running &#39;glm.nb.R&#39;
-##   Running &#39;hubers.R&#39;
-##   Running &#39;lme.R&#39;
-##   Running &#39;polr.R&#39;
-##   Running &#39;profile.R&#39;
-##   Running &#39;regression.R&#39;
-##   comparing &#39;regression.Rout&#39; to &#39;regression.Rout.save&#39; ... OK
-##   Running &#39;rlm.R&#39;
-##   Running &#39;scripts.R&#39;
-## Testing examples for package &#39;lattice&#39;
-## Running specific tests for package &#39;lattice&#39;
-##   Running &#39;auto-key.R&#39;
-##   Running &#39;barchart-width.R&#39;
-##   Running &#39;call.R&#39;
-##   Running &#39;colorkey-title.R&#39;
-##   Running &#39;dates.R&#39;
-##   Running &#39;dotplotscoping.R&#39;
-##   Running &#39;fontsize.R&#39;
-##   Running &#39;levelplot.R&#39;
-##   Running &#39;MASSch04.R&#39;
-##   Running &#39;scales.R&#39;
-##   Running &#39;shade-wireframe.R&#39;
-##   Running &#39;summary.R&#39;
-##   Running &#39;temp.R&#39;
-##   Running &#39;test.R&#39;
-##   Running &#39;wireframe.R&#39;
-## Running vignettes for package &#39;lattice&#39;
-##   Running &#39;grid.Rnw&#39;
-## 
-## Attaching package: &#39;lattice&#39;
-## 
-## The following object is masked _by_ &#39;.GlobalEnv&#39;:
-## 
-##     splom
-## 
-## Testing examples for package &#39;Matrix&#39;
-## Running specific tests for package &#39;Matrix&#39;
-##   Running &#39;abIndex-tsts.R&#39;
-##   Running &#39;base-matrix-fun.R&#39;
-##   Running &#39;bind.R&#39;
-##   comparing &#39;bind.Rout&#39; to &#39;bind.Rout.save&#39; ... OK
-##   Running &#39;Class+Meth.R&#39;
-##   Running &#39;dg_Matrix.R&#39;
-##   Running &#39;dpo-test.R&#39;
-##   Running &#39;dtpMatrix.R&#39;
-##   Running &#39;factorizing.R&#39;
-##   Running &#39;group-methods.R&#39;
-##   Running &#39;indexing.R&#39;
-##   comparing &#39;indexing.Rout&#39; to &#39;indexing.Rout.save&#39; ... OK
-##   Running &#39;matprod.R&#39;
-##   Running &#39;matr-exp.R&#39;
-##   Running &#39;other-pkgs.R&#39;
-##   Running &#39;packed-unpacked.R&#39;
-##   Running &#39;Simple.R&#39;
-##   Running &#39;spModel.matrix.R&#39;
-##   Running &#39;symmDN.R&#39;
-##   Running &#39;validObj.R&#39;
-##   Running &#39;write-read.R&#39;
-## Running vignettes for package &#39;Matrix&#39;
-##   Running &#39;Comparisons.Rnw&#39;
-##   Running &#39;Design-issues.Rnw&#39;
-##   Running &#39;Intro2Matrix.Rnw&#39;
-##   Running &#39;Introduction.Rnw&#39;
-##   Running &#39;sparseModels.Rnw&#39;
-##   [[ suppressing 20 column names &#39;1&#39;, &#39;2&#39;, &#39;3&#39; ... ]]
-##   [[ suppressing 24 column names &#39;1&#39;, &#39;2&#39;, &#39;3&#39; ... ]]
-## Testing examples for package &#39;nlme&#39;
-## Running specific tests for package &#39;nlme&#39;
-##   Running &#39;anova.gls.R&#39;
-##   Running &#39;augPred_lab.R&#39;
-##   Running &#39;augPredmissing.R&#39;
-##   Running &#39;coef.R&#39;
-##   comparing &#39;coef.Rout&#39; to &#39;coef.Rout.save&#39; ... OK
-##   Running &#39;contrMat.R&#39;
-##   Running &#39;corFactor.R&#39;
-##   Running &#39;data.frame.R&#39;
-##   Running &#39;deparse.R&#39;
-##   Running &#39;deviance.R&#39;
-##   Running &#39;fitted.R&#39;
-##   Running &#39;getData.R&#39;
-##   Running &#39;getVarCov.R&#39;
-##   Running &#39;gls.R&#39;
-##   Running &#39;gnls-ch8.R&#39;
-##   Running &#39;lme.R&#39;
-##   comparing &#39;lme.Rout&#39; to &#39;lme.Rout.save&#39; ... OK
-##   Running &#39;lmList.R&#39;
-##   Running &#39;missing.R&#39;
-##   comparing &#39;missing.Rout&#39; to &#39;missing.Rout.save&#39; ... OK
-##   Running &#39;nlme2.R&#39;
-##   Running &#39;nlme.R&#39;
-##   Running &#39;predict.lme.R&#39;
-##   Running &#39;scoping.R&#39;
-##   Running &#39;sigma-fixed-etc.R&#39;
-##   Running &#39;updateLme.R&#39;
-##   Running &#39;varConstProp.R&#39;
-##   Running &#39;varIdent.R&#39;
-## Testing examples for package &#39;survival&#39;
-##   comparing &#39;survival-Ex.Rout&#39; to &#39;survival-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;survival&#39;
-##   Running &#39;aareg.R&#39;
-##   comparing &#39;aareg.Rout&#39; to &#39;aareg.Rout.save&#39; ... OK
-##   Running &#39;anova.R&#39;
-##   comparing &#39;anova.Rout&#39; to &#39;anova.Rout.save&#39; ... OK
-##   Running &#39;bladder.R&#39;
-##   comparing &#39;bladder.Rout&#39; to &#39;bladder.Rout.save&#39; ... OK
-##   Running &#39;book1.R&#39;
-##   comparing &#39;book1.Rout&#39; to &#39;book1.Rout.save&#39; ... OK
-##   Running &#39;book2.R&#39;
-##   comparing &#39;book2.Rout&#39; to &#39;book2.Rout.save&#39; ... OK
-##   Running &#39;book3.R&#39;
-##   comparing &#39;book3.Rout&#39; to &#39;book3.Rout.save&#39; ... OK
-##   Running &#39;book4.R&#39;
-##   comparing &#39;book4.Rout&#39; to &#39;book4.Rout.save&#39; ... OK
-##   Running &#39;book5.R&#39;
-##   comparing &#39;book5.Rout&#39; to &#39;book5.Rout.save&#39; ... OK
-##   Running &#39;book6.R&#39;
-##   comparing &#39;book6.Rout&#39; to &#39;book6.Rout.save&#39; ... OK
-##   Running &#39;book7.R&#39;
-##   comparing &#39;book7.Rout&#39; to &#39;book7.Rout.save&#39; ... OK
-##   Running &#39;brier.R&#39;
-##   comparing &#39;brier.Rout&#39; to &#39;brier.Rout.save&#39; ... OK
-##   Running &#39;cancer.R&#39;
-##   comparing &#39;cancer.Rout&#39; to &#39;cancer.Rout.save&#39; ... OK
-##   Running &#39;checkSurv2.R&#39;
-##   comparing &#39;checkSurv2.Rout&#39; to &#39;checkSurv2.Rout.save&#39; ... OK
-##   Running &#39;clogit.R&#39;
-##   comparing &#39;clogit.Rout&#39; to &#39;clogit.Rout.save&#39; ... OK
-##   Running &#39;concordance2.R&#39;
-##   comparing &#39;concordance2.Rout&#39; to &#39;concordance2.Rout.save&#39; ... OK
-##   Running &#39;concordance3.R&#39;
-##   comparing &#39;concordance3.Rout&#39; to &#39;concordance3.Rout.save&#39; ... OK
-##   Running &#39;concordance.R&#39;
-##   comparing &#39;concordance.Rout&#39; to &#39;concordance.Rout.save&#39; ... OK
-##   Running &#39;counting.R&#39;
-##   comparing &#39;counting.Rout&#39; to &#39;counting.Rout.save&#39; ... OK
-##   Running &#39;coxsurv2.R&#39;
-##   comparing &#39;coxsurv2.Rout&#39; to &#39;coxsurv2.Rout.save&#39; ... OK
-##   Running &#39;coxsurv3.R&#39;
-##   comparing &#39;coxsurv3.Rout&#39; to &#39;coxsurv3.Rout.save&#39; ... OK
-##   Running &#39;coxsurv4.R&#39;
-##   comparing &#39;coxsurv4.Rout&#39; to &#39;coxsurv4.Rout.save&#39; ... OK
-##   Running &#39;coxsurv5.R&#39;
-##   comparing &#39;coxsurv5.Rout&#39; to &#39;coxsurv5.Rout.save&#39; ... OK
-##   Running &#39;coxsurv6.R&#39;
-##   comparing &#39;coxsurv6.Rout&#39; to &#39;coxsurv6.Rout.save&#39; ... OK
-##   Running &#39;coxsurv.R&#39;
-##   comparing &#39;coxsurv.Rout&#39; to &#39;coxsurv.Rout.save&#39; ... OK
-##   Running &#39;detail.R&#39;
-##   comparing &#39;detail.Rout&#39; to &#39;detail.Rout.save&#39; ... OK
-##   Running &#39;difftest.R&#39;
-##   comparing &#39;difftest.Rout&#39; to &#39;difftest.Rout.save&#39; ... OK
-##   Running &#39;doaml.R&#39;
-##   comparing &#39;doaml.Rout&#39; to &#39;doaml.Rout.save&#39; ... OK
-##   Running &#39;doweight.R&#39;
-##   comparing &#39;doweight.Rout&#39; to &#39;doweight.Rout.save&#39; ... OK
-##   Running &#39;dropspecial.R&#39;
-##   comparing &#39;dropspecial.Rout&#39; to &#39;dropspecial.Rout.save&#39; ... OK
-##   Running &#39;expected2.R&#39;
-##   comparing &#39;expected2.Rout&#39; to &#39;expected2.Rout.save&#39; ... OK
-##   Running &#39;expected.R&#39;
-##   comparing &#39;expected.Rout&#39; to &#39;expected.Rout.save&#39; ... OK
-##   Running &#39;factor2.R&#39;
-##   comparing &#39;factor2.Rout&#39; to &#39;factor2.Rout.save&#39; ... OK
-##   Running &#39;factor.R&#39;
-##   comparing &#39;factor.Rout&#39; to &#39;factor.Rout.save&#39; ... OK
-##   Running &#39;finegray.R&#39;
-##   comparing &#39;finegray.Rout&#39; to &#39;finegray.Rout.save&#39; ... OK
-##   Running &#39;frailty.R&#39;
-##   comparing &#39;frailty.Rout&#39; to &#39;frailty.Rout.save&#39; ... OK
-##   Running &#39;frank.R&#39;
-##   comparing &#39;frank.Rout&#39; to &#39;frank.Rout.save&#39; ... OK
-##   Running &#39;fr_cancer.R&#39;
-##   comparing &#39;fr_cancer.Rout&#39; to &#39;fr_cancer.Rout.save&#39; ... OK
-##   Running &#39;fr_kidney.R&#39;
-##   comparing &#39;fr_kidney.Rout&#39; to &#39;fr_kidney.Rout.save&#39; ... OK
-##   Running &#39;fr_lung.R&#39;
-##   comparing &#39;fr_lung.Rout&#39; to &#39;fr_lung.Rout.save&#39; ... OK
-##   Running &#39;fr_ovarian.R&#39;
-##   comparing &#39;fr_ovarian.Rout&#39; to &#39;fr_ovarian.Rout.save&#39; ... OK
-##   Running &#39;fr_rat1.R&#39;
-##   comparing &#39;fr_rat1.Rout&#39; to &#39;fr_rat1.Rout.save&#39; ... OK
-##   Running &#39;fr_resid.R&#39;
-##   comparing &#39;fr_resid.Rout&#39; to &#39;fr_resid.Rout.save&#39; ... OK
-##   Running &#39;fr_simple.R&#39;
-##   comparing &#39;fr_simple.Rout&#39; to &#39;fr_simple.Rout.save&#39; ... OK
-##   Running &#39;infcox.R&#39;
-##   comparing &#39;infcox.Rout&#39; to &#39;infcox.Rout.save&#39; ... OK
-##   Running &#39;jasa.R&#39;
-##   comparing &#39;jasa.Rout&#39; to &#39;jasa.Rout.save&#39; ... OK
-##   Running &#39;model.matrix.R&#39;
-##   comparing &#39;model.matrix.Rout&#39; to &#39;model.matrix.Rout.save&#39; ... OK
-##   Running &#39;mstate.R&#39;
-##   comparing &#39;mstate.Rout&#39; to &#39;mstate.Rout.save&#39; ... OK
-##   Running &#39;mstrata.R&#39;
-##   comparing &#39;mstrata.Rout&#39; to &#39;mstrata.Rout.save&#39; ... OK
-##   Running &#39;multi2.R&#39;
-##   comparing &#39;multi2.Rout&#39; to &#39;multi2.Rout.save&#39; ...</code></pre>
-<p>36c36 &lt; [1] “Component”trt”: ‘current’ is not a factor” — &gt; [1]
-“Component &quot;trt&quot;: ‘current’ is not a factor”</p>
-<pre><code>##   Running &#39;multi3.R&#39;
-##   comparing &#39;multi3.Rout&#39; to &#39;multi3.Rout.save&#39; ... OK
-##   Running &#39;multistate.R&#39;
-##   comparing &#39;multistate.Rout&#39; to &#39;multistate.Rout.save&#39; ... OK
-##   Running &#39;neardate.R&#39;
-##   comparing &#39;neardate.Rout&#39; to &#39;neardate.Rout.save&#39; ... OK
-##   Running &#39;nested.R&#39;
-##   comparing &#39;nested.Rout&#39; to &#39;nested.Rout.save&#39; ... OK
-##   Running &#39;nsk.R&#39;
-##   comparing &#39;nsk.Rout&#39; to &#39;nsk.Rout.save&#39; ... OK
-##   Running &#39;ovarian.R&#39;
-##   comparing &#39;ovarian.Rout&#39; to &#39;ovarian.Rout.save&#39; ... OK
-##   Running &#39;overlap.R&#39;
-##   comparing &#39;overlap.Rout&#39; to &#39;overlap.Rout.save&#39; ... OK
-##   Running &#39;prednew.R&#39;
-##   comparing &#39;prednew.Rout&#39; to &#39;prednew.Rout.save&#39; ... OK
-##   Running &#39;pseudo.R&#39;
-##   comparing &#39;pseudo.Rout&#39; to &#39;pseudo.Rout.save&#39; ... OK
-##   Running &#39;pspline.R&#39;
-##   comparing &#39;pspline.Rout&#39; to &#39;pspline.Rout.save&#39; ... OK
-##   Running &#39;pyear.R&#39;
-##   comparing &#39;pyear.Rout&#39; to &#39;pyear.Rout.save&#39; ... OK
-##   Running &#39;quantile.R&#39;
-##   comparing &#39;quantile.Rout&#39; to &#39;quantile.Rout.save&#39; ... OK
-##   Running &#39;ratetable.R&#39;
-##   comparing &#39;ratetable.Rout&#39; to &#39;ratetable.Rout.save&#39; ... OK
-##   Running &#39;residsf.R&#39;
-##   comparing &#39;residsf.Rout&#39; to &#39;residsf.Rout.save&#39; ... OK
-##   Running &#39;r_lung.R&#39;
-##   comparing &#39;r_lung.Rout&#39; to &#39;r_lung.Rout.save&#39; ... OK
-##   Running &#39;royston.R&#39;
-##   comparing &#39;royston.Rout&#39; to &#39;royston.Rout.save&#39; ... OK
-##   Running &#39;r_resid.R&#39;
-##   comparing &#39;r_resid.Rout&#39; to &#39;r_resid.Rout.save&#39; ... OK
-##   Running &#39;r_sas.R&#39;
-##   comparing &#39;r_sas.Rout&#39; to &#39;r_sas.Rout.save&#39; ... OK
-##   Running &#39;r_scale.R&#39;
-##   comparing &#39;r_scale.Rout&#39; to &#39;r_scale.Rout.save&#39; ... OK
-##   Running &#39;r_stanford.R&#39;
-##   comparing &#39;r_stanford.Rout&#39; to &#39;r_stanford.Rout.save&#39; ... OK
-##   Running &#39;r_strata.R&#39;
-##   comparing &#39;r_strata.Rout&#39; to &#39;r_strata.Rout.save&#39; ... OK
-##   Running &#39;r_tdist.R&#39;
-##   comparing &#39;r_tdist.Rout&#39; to &#39;r_tdist.Rout.save&#39; ... OK
-##   Running &#39;rttright.R&#39;
-##   comparing &#39;rttright.Rout&#39; to &#39;rttright.Rout.save&#39; ... OK
-##   Running &#39;r_user.R&#39;
-##   comparing &#39;r_user.Rout&#39; to &#39;r_user.Rout.save&#39; ... OK
-##   Running &#39;singtest.R&#39;
-##   comparing &#39;singtest.Rout&#39; to &#39;singtest.Rout.save&#39; ... OK
-##   Running &#39;strata2.R&#39;
-##   comparing &#39;strata2.Rout&#39; to &#39;strata2.Rout.save&#39; ... OK
-##   Running &#39;stratatest.R&#39;
-##   comparing &#39;stratatest.Rout&#39; to &#39;stratatest.Rout.save&#39; ... OK
-##   Running &#39;summary_survfit.R&#39;
-##   comparing &#39;summary_survfit.Rout&#39; to &#39;summary_survfit.Rout.save&#39; ... OK
-##   Running &#39;survcheck.R&#39;
-##   comparing &#39;survcheck.Rout&#39; to &#39;survcheck.Rout.save&#39; ... OK
-##   Running &#39;survfit1.R&#39;
-##   comparing &#39;survfit1.Rout&#39; to &#39;survfit1.Rout.save&#39; ... OK
-##   Running &#39;survfit2.R&#39;
-##   comparing &#39;survfit2.Rout&#39; to &#39;survfit2.Rout.save&#39; ... OK
-##   Running &#39;surv.R&#39;
-##   comparing &#39;surv.Rout&#39; to &#39;surv.Rout.save&#39; ... OK
-##   Running &#39;survreg1.R&#39;
-##   comparing &#39;survreg1.Rout&#39; to &#39;survreg1.Rout.save&#39; ... OK
-##   Running &#39;survreg2.R&#39;
-##   comparing &#39;survreg2.Rout&#39; to &#39;survreg2.Rout.save&#39; ... OK
-##   Running &#39;survSplit.R&#39;
-##   comparing &#39;survSplit.Rout&#39; to &#39;survSplit.Rout.save&#39; ... OK
-##   Running &#39;survtest.R&#39;
-##   comparing &#39;survtest.Rout&#39; to &#39;survtest.Rout.save&#39; ... OK
-##   Running &#39;testci2.R&#39;
-##   comparing &#39;testci2.Rout&#39; to &#39;testci2.Rout.save&#39; ... OK
-##   Running &#39;testci.R&#39;
-##   comparing &#39;testci.Rout&#39; to &#39;testci.Rout.save&#39; ... OK
-##   Running &#39;testnull.R&#39;
-##   comparing &#39;testnull.Rout&#39; to &#39;testnull.Rout.save&#39; ... OK
-##   Running &#39;testreg.R&#39;
-##   comparing &#39;testreg.Rout&#39; to &#39;testreg.Rout.save&#39; ... OK
-##   Running &#39;tiedtime.R&#39;
-##   comparing &#39;tiedtime.Rout&#39; to &#39;tiedtime.Rout.save&#39; ... OK
-##   Running &#39;tmerge2.R&#39;
-##   comparing &#39;tmerge2.Rout&#39; to &#39;tmerge2.Rout.save&#39; ... OK
-##   Running &#39;tmerge3.R&#39;
-##   comparing &#39;tmerge3.Rout&#39; to &#39;tmerge3.Rout.save&#39; ... OK
-##   Running &#39;tmerge.R&#39;
-##   comparing &#39;tmerge.Rout&#39; to &#39;tmerge.Rout.save&#39; ... OK
-##   Running &#39;tt2.R&#39;
-##   comparing &#39;tt2.Rout&#39; to &#39;tt2.Rout.save&#39; ... OK
-##   Running &#39;tt.R&#39;
-##   comparing &#39;tt.Rout&#39; to &#39;tt.Rout.save&#39; ... OK
-##   Running &#39;turnbull.R&#39;
-##   comparing &#39;turnbull.Rout&#39; to &#39;turnbull.Rout.save&#39; ... OK
-##   Running &#39;update.R&#39;
-##   comparing &#39;update.Rout&#39; to &#39;update.Rout.save&#39; ... OK
-##   Running &#39;yates0.R&#39;
-##   comparing &#39;yates0.Rout&#39; to &#39;yates0.Rout.save&#39; ...</code></pre>
-<p>51c51 &lt; [1] “Attributes: &lt; Component”dimnames”: Component 2: 1
-string mismatch &gt;” — &gt; [1] “Attributes: &lt; Component &quot;dimnames&quot;:
-Component 2: 1 string mismatch &gt;”</p>
-<pre><code>##   Running &#39;yates1.R&#39;
-##   comparing &#39;yates1.Rout&#39; to &#39;yates1.Rout.save&#39; ... OK
-##   Running &#39;yates2.R&#39;
-##   Running &#39;zph.R&#39;
-##   comparing &#39;zph.Rout&#39; to &#39;zph.Rout.save&#39; ... OK
-## Running vignettes for package &#39;survival&#39;
-##   Running &#39;adjcurve.Rnw&#39;
-##   Running &#39;approximate.Rnw&#39;
-##   Running &#39;compete.Rnw&#39;
-##   Running &#39;concordance.Rnw&#39;
-##   Running &#39;discrim.Rnw&#39;
-##   Running &#39;matrix.Rnw&#39;
-##   Running &#39;multi.Rnw&#39;
-##   Running &#39;other.Rnw&#39;
-##   Running &#39;population.Rnw&#39;
-##   Running &#39;redistribute.Rnw&#39;
-##   Running &#39;splines.Rnw&#39;
-##   Running &#39;survival.Rnw&#39;</code></pre>
-<pre><code>## Warning in coxph(Surv(tstart, time, status) ~ trt +
-## celltype + karno + time:karno, : a variable appears on both
-## the left and right sides of the formula</code></pre>
-<pre><code>## Warning in coxph(Surv(tstart, time, status) ~ trt +
-## celltype + karno + rank(time):karno, : a variable appears
-## on both the left and right sides of the formula</code></pre>
-<pre><code>##   Running &#39;tiedtimes.Rnw&#39;
-##   Running &#39;timedep.Rnw&#39;</code></pre>
-<pre><code>## Warning in tmerge(jasa, tdata, id = subject, death =
-## event(futime, fustat), : replacement of variable
-## &#39;transplant&#39;</code></pre>
-<pre><code>##   Running &#39;validate.Rnw&#39;</code></pre>
-<pre><code>## Warning in coxph.fit(X, Y, istrat, offset, init, control,
-## weights = weights, : Ran out of iterations and did not
-## converge</code></pre>
-<pre><code>## Warning in coxph.fit(X, Y, istrat, offset, init, control,
-## weights = weights, : Ran out of iterations and did not
-## converge</code></pre>
-<pre><code>## Warning in coxph(Surv(tstart, time, status) ~ trt +
-## celltype + karno + time:karno, : a variable appears on both
-## the left and right sides of the formula</code></pre>
-<pre><code>## Warning in coxph(Surv(tstart, time, status) ~ trt +
-## celltype + karno + rank(time):karno, : a variable appears
-## on both the left and right sides of the formula</code></pre>
-<pre><code>## Warning in tmerge(jasa, tdata, id = subject, death =
-## event(futime, fustat), : replacement of variable
-## &#39;transplant&#39;</code></pre>
-<pre><code>## Warning in coxph.fit(X, Y, istrat, offset, init, control,
-## weights = weights, : Ran out of iterations and did not
-## converge
-
-## Warning in coxph.fit(X, Y, istrat, offset, init, control,
-## weights = weights, : Ran out of iterations and did not
-## converge</code></pre>
-<pre><code>## Testing examples for package &#39;boot&#39;
-##   comparing &#39;boot-Ex.Rout&#39; to &#39;boot-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;boot&#39;
-##   Running &#39;parallel-censboot.R&#39;
-## Testing examples for package &#39;cluster&#39;
-## Running specific tests for package &#39;cluster&#39;
-##   Running &#39;agnes-ex.R&#39;
-##   comparing &#39;agnes-ex.Rout&#39; to &#39;agnes-ex.Rout.save&#39; ... OK
-##   Running &#39;clara-ex.R&#39;
-##   Running &#39;clara-NAs.R&#39;
-##   comparing &#39;clara-NAs.Rout&#39; to &#39;clara-NAs.Rout.save&#39; ... OK
-##   Running &#39;clara.R&#39;
-##   comparing &#39;clara.Rout&#39; to &#39;clara.Rout.save&#39; ... OK
-##   Running &#39;clusplot-out.R&#39;
-##   comparing &#39;clusplot-out.Rout&#39; to &#39;clusplot-out.Rout.save&#39; ... OK
-##   Running &#39;daisy-ex.R&#39;
-##   comparing &#39;daisy-ex.Rout&#39; to &#39;daisy-ex.Rout.save&#39; ... OK
-##   Running &#39;diana-boots.R&#39;
-##   Running &#39;diana-ex.R&#39;
-##   comparing &#39;diana-ex.Rout&#39; to &#39;diana-ex.Rout.save&#39; ... OK
-##   Running &#39;ellipsoid-ex.R&#39;
-##   comparing &#39;ellipsoid-ex.Rout&#39; to &#39;ellipsoid-ex.Rout.save&#39; ... OK
-##   Running &#39;fanny-ex.R&#39;
-##   Running &#39;mona.R&#39;
-##   comparing &#39;mona.Rout&#39; to &#39;mona.Rout.save&#39; ... OK
-##   Running &#39;pam.R&#39;
-##   comparing &#39;pam.Rout&#39; to &#39;pam.Rout.save&#39; ... OK
-##   Running &#39;silhouette-default.R&#39;
-##   comparing &#39;silhouette-default.Rout&#39; to &#39;silhouette-default.Rout.save&#39; ... OK
-##   Running &#39;sweep-ex.R&#39;
-##   Running &#39;withAutoprint.R&#39;
-## Testing examples for package &#39;codetools&#39;
-## Running specific tests for package &#39;codetools&#39;
-##   Running &#39;tests.R&#39;
-## Testing examples for package &#39;foreign&#39;
-## Running specific tests for package &#39;foreign&#39;
-##   Running &#39;arff.R&#39;
-##   comparing &#39;arff.Rout&#39; to &#39;arff.Rout.save&#39; ... OK
-##   Running &#39;download.R&#39;
-##   Running &#39;minitab.R&#39;
-##   comparing &#39;minitab.Rout&#39; to &#39;minitab.Rout.save&#39; ... OK
-##   Running &#39;mval_bug.R&#39;
-##   comparing &#39;mval_bug.Rout&#39; to &#39;mval_bug.Rout.save&#39; ... OK
-##   Running &#39;octave.R&#39;
-##   comparing &#39;octave.Rout&#39; to &#39;octave.Rout.save&#39; ... OK
-##   Running &#39;S3.R&#39;
-##   comparing &#39;S3.Rout&#39; to &#39;S3.Rout.save&#39; ... OK
-##   Running &#39;sas.R&#39;
-##   Running &#39;spss.R&#39;
-##   comparing &#39;spss.Rout&#39; to &#39;spss.Rout.save&#39; ... OK
-##   Running &#39;stata.R&#39;
-##   comparing &#39;stata.Rout&#39; to &#39;stata.Rout.save&#39; ... OK
-##   Running &#39;testEmpty.R&#39;
-##   comparing &#39;testEmpty.Rout&#39; to &#39;testEmpty.Rout.save&#39; ... OK
-##   Running &#39;writeForeignSPSS.R&#39;
-##   comparing &#39;writeForeignSPSS.Rout&#39; to &#39;writeForeignSPSS.Rout.save&#39; ... OK
-##   Running &#39;xport.R&#39;
-##   comparing &#39;xport.Rout&#39; to &#39;xport.Rout.save&#39; ... OK
-## Testing examples for package &#39;KernSmooth&#39;
-## Running specific tests for package &#39;KernSmooth&#39;
-##   Running &#39;bkfe.R&#39;
-##   Running &#39;locpoly.R&#39;
-## Testing examples for package &#39;rpart&#39;
-##   comparing &#39;rpart-Ex.Rout&#39; to &#39;rpart-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;rpart&#39;
-##   Running &#39;backticks.R&#39;
-##   comparing &#39;backticks.Rout&#39; to &#39;backticks.Rout.save&#39; ... OK
-##   Running &#39;cost.R&#39;
-##   comparing &#39;cost.Rout&#39; to &#39;cost.Rout.save&#39; ... OK
-##   Running &#39;cptest.R&#39;
-##   comparing &#39;cptest.Rout&#39; to &#39;cptest.Rout.save&#39; ... OK
-##   Running &#39;minus_in_formula.R&#39;
-##   comparing &#39;minus_in_formula.Rout&#39; to &#39;minus_in_formula.Rout.save&#39; ... OK
-##   Running &#39;priors.R&#39;
-##   comparing &#39;priors.Rout&#39; to &#39;priors.Rout.save&#39; ... OK
-##   Running &#39;rescale.R&#39;
-##   comparing &#39;rescale.Rout&#39; to &#39;rescale.Rout.save&#39; ... OK
-##   Running &#39;testall.R&#39;
-##   comparing &#39;testall.Rout&#39; to &#39;testall.Rout.save&#39; ... OK
-##   Running &#39;treble2.R&#39;
-##   comparing &#39;treble2.Rout&#39; to &#39;treble2.Rout.save&#39; ... OK
-##   Running &#39;treble3.R&#39;
-##   comparing &#39;treble3.Rout&#39; to &#39;treble3.Rout.save&#39; ... OK
-##   Running &#39;treble4.R&#39;
-##   comparing &#39;treble4.Rout&#39; to &#39;treble4.Rout.save&#39; ... OK
-##   Running &#39;treble.R&#39;
-##   comparing &#39;treble.Rout&#39; to &#39;treble.Rout.save&#39; ... OK
-##   Running &#39;usersplits.R&#39;
-##   comparing &#39;usersplits.Rout&#39; to &#39;usersplits.Rout.save&#39; ... OK
-##   Running &#39;xpred1.R&#39;
-##   comparing &#39;xpred1.Rout&#39; to &#39;xpred1.Rout.save&#39; ... OK
-##   Running &#39;xpred2.R&#39;
-##   comparing &#39;xpred2.Rout&#39; to &#39;xpred2.Rout.save&#39; ... OK
-## Running vignettes for package &#39;rpart&#39;
-##   Running &#39;longintro.Rnw&#39;
-##   Running &#39;usercode.Rnw&#39;
-## Testing examples for package &#39;class&#39;
-## Testing examples for package &#39;nnet&#39;
-## Testing examples for package &#39;spatial&#39;
-##   comparing &#39;spatial-Ex.Rout&#39; to &#39;spatial-Ex.Rout.save&#39; ... OK
-## Running specific tests for package &#39;spatial&#39;
-## Testing examples for package &#39;mgcv&#39;</code></pre>
-<pre class="r"><code>if(success_recommended){
+                                                    errorsAreFatal = FALSE)
+if(success_recommended){
   #only run if have fails to see where it happens
   tools::testInstalledPackages(scope = &quot;recommended&quot;, 
                                              outDir =recommended_dir,
@@ -1139,15 +438,42 @@ Component 2: 1 string mismatch &gt;”</p>
 system(&quot;rm -rf home_tests&quot;)
 test_dir &lt;- paste0(R.home(),&quot;/tests&quot;)
 cmd &lt;- paste(&quot;cp -r &quot;, test_dir, &quot; home_tests&quot;)
-system(cmd)</code></pre>
+system(cmd)
+dir.create(&quot;package&quot;)</code></pre>
 <p>The return code from the tests, 0/1 indicates success/fail. The
 outputs and comparisons from each is in the directory “home_tests”</p>
-<ul>
-<li>basic_tests - 0</li>
-<li>basic internet tests - 0</li>
-<li>base_tests - 0</li>
-<li>recommended_tests - 0</li>
-</ul>
+</div>
+<div id="non-standard-packages" class="section level1">
+<h1>Non-standard packages</h1>
+<p>We use a variety of extra packages that need to be tested
+individually. These rely on a set of test code however, this is not
+installed by default on Rocker, as it increases the size of images and
+will only be used once here for UAT. So in most cases we have to
+re-download the package to get a copy of the test files, and then use a
+slightly modified version of tools::testInstalledPackage (where it looks
+to find the test path). An exception is the in-house cctu package, where
+we do keep the test files in rocker.</p>
+<div id="cctu" class="section level2">
+<h2>CCTU</h2>
+<pre class="r"><code>source(&quot;test_pkg.R&quot;)
+unlink(&quot;package/cctu&quot;)
+dir.create(&quot;package/cctu&quot;)</code></pre>
+<pre><code>## Warning in dir.create(&quot;package/cctu&quot;): &#39;package/cctu&#39; already exists</code></pre>
+<pre class="r"><code>out &lt;- tools::testInstalledPackage(&quot;cctu&quot;, outDir=&quot;package/cctu&quot;,
+                                   type= c(&quot;examples&quot;, &quot;tests&quot;)
+                                   )</code></pre>
+<pre><code>## Testing examples for package &#39;cctu&#39;</code></pre>
+<pre><code>##   comparing &#39;cctu-Ex.Rout&#39; to &#39;cctu-Ex.Rout.prev&#39; ... OK
+## Running specific tests for package &#39;cctu&#39;
+##   Running &#39;testthat.R&#39;</code></pre>
+<pre class="r"><code>#needs rms installed to pass tests
+print(out)</code></pre>
+<p>[1] 0</p>
+<pre class="r"><code>pkgs &lt;- installed.packages()
+pkg_list &lt;- pkgs[pkgs[,&quot;LibPath&quot;]==&quot;/usr/local/lib/R/site-library&quot;,&quot;Package&quot;]
+pkg_list &lt;- grep(&quot;cctu&quot;, pkg_list, value = TRUE, invert=TRUE)[1:4]
+long_hand &lt;- lapply( pkg_list, function(pkg){ knitr::knit_expand(&quot;package_validate.Rmd&quot;)})</code></pre>
+</div>
 </div>
 
 

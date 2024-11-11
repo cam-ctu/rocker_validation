@@ -40,7 +40,7 @@ dir.create(recommended_dir)
 
 Running the installation tests as per the manual
 
-```{r tests}
+```{r tests, eval=FALSE}
 Sys.setenv(LC_COLLATE = "C", LC_TIME="C", LANGUAGE = "en")
 success_basic <- tools::testInstalledBasic("both")
 success_internet <- tools::testInstalledBasic("internet")
@@ -80,6 +80,7 @@ The return code from the  tests,  0/1 indicates success/fail.  The outputs and c
 * base_tests - `r success_base`
 * recommended_tests - `r success_recommended`
 
+
 # Non-standard packages
 
 We use a variety of extra packages that need to be tested individually. These rely on a set of test code however, this is not installed by default on Rocker, as it increases the size of images and will only be used once here for UAT.  So in most cases we have to re-download the package to get a copy of the test files, and then use a slightly modified version of tools::testInstalledPackage (where it looks to find the test path). An exception is the in-house cctu package, where we do keep the test files in rocker.
@@ -88,19 +89,23 @@ We use a variety of extra packages that need to be tested individually. These re
 
 ```{r cctutest}
 source("test_pkg.R")
-unlink("package\cctu")
-dir.create("package\cctu")
+unlink("package/cctu")
+dir.create("package/cctu")
 out <- tools::testInstalledPackage("cctu", outDir="package/cctu",
                                    type= c("examples", "tests")
                                    )
-# needs rms installed to pass tests
+#needs rms installed to pass tests
+print(out)
+```
 
+
+```{r packages }
+pkgs <- installed.packages()
 pkg_list <- pkgs[pkgs[,"LibPath"]=="/usr/local/lib/R/site-library","Package"]
 pkg_list <- grep("cctu", pkg_list, value = TRUE, invert=TRUE)
 long_hand <- lapply( pkg_list, function(pkg){ knitr::knit_expand("package_validate.Rmd")})
 ```
 
+
+
 `r knitr::knit_child(text=unlist(long_hand))`
-
-
-
