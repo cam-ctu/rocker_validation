@@ -1,3 +1,5 @@
 home_tests/
 .Rproj.user/
-package/
+**/package/**/*
+!**/package/**/*.Rout
+

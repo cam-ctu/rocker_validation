@@ -11,7 +11,7 @@
 
 <meta name="author" content="Simon Bond" />
 
-<meta name="date" content="2024-11-11" />
+<meta name="date" content="2024-11-14" />
 
 <title>qd</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">qd</h1>
 <h4 class="author">Simon Bond</h4>
-<h4 class="date">2024-11-11</h4>
+<h4 class="date">2024-11-14</h4>
 
 </div>
 
@@ -360,38 +360,36 @@ display: none;
 <div id="whatever" class="section level1">
 <h1>whatever</h1>
 <pre class="r"><code>source(&quot;test_pkg.R&quot;)
-pkg_list &lt;- &quot;abind&quot;
+pkg_list &lt;- &quot;mlmRev&quot;
 long_hand &lt;- lapply( pkg_list, function(pkg){ knitr::knit_expand(&quot;package_validate.Rmd&quot;)})</code></pre>
-<div id="abind" class="section level2">
-<h2>abind</h2>
-<pre class="r"><code>dl &lt;- download.packages(&quot;abind&quot;, destdir=&quot;package&quot;,type=&quot;source&quot;,
+<div id="mlmrev" class="section level2">
+<h2>mlmRev</h2>
+<pre class="r"><code>dl &lt;- download.packages(&quot;mlmRev&quot;, destdir=&quot;package&quot;,type=&quot;source&quot;,
                         method=&quot;wget&quot;)# wget was what solved this.. was getting binary versions
 
 #unzip the tar.gz file
 # 
-unlink(&quot;package/abind&quot;)
+unlink(&quot;package/mlmRev&quot;)
 untar(dl[,2], exdir = &quot;package&quot;, restore_times=FALSE)</code></pre>
 <pre><code>## Warning in untar(dl[, 2], exdir = &quot;package&quot;, restore_times = FALSE):
-## &#39;/usr/bin/tar -mxf &#39;package/abind_1.4-5.tar.gz&#39; -C &#39;package&#39;&#39; returned error
+## &#39;/usr/bin/tar -mxf &#39;package/mlmRev_1.0-8.tar.gz&#39; -C &#39;package&#39;&#39; returned error
 ## code 2</code></pre>
 <pre class="r"><code># modify the testInstalledpackages to use the /test fold from within pack.
-result &lt;- test_pkg(&quot;abind&quot;, outDir=&quot;package/abind&quot;, test_path=&quot;tests&quot;,
+result &lt;- test_pkg(&quot;mlmRev&quot;, outDir=&quot;package/mlmRev&quot;, test_path=&quot;tests&quot;,
                    types=c(&quot;examples&quot;,&quot;tests&quot;)
                    )</code></pre>
-<pre><code>## Testing examples for package &#39;abind&#39;</code></pre>
-<pre><code>##   comparing &#39;abind-Ex.Rout&#39; to &#39;abind-Ex.Rout.prev&#39; ... OK
-## checks for tests
+<pre><code>## Testing examples for package &#39;mlmRev&#39;</code></pre>
+<pre><code>##   comparing &#39;mlmRev-Ex.Rout&#39; to &#39;mlmRev-Ex.Rout.prev&#39; ... NOTE</code></pre>
+<p>119c119 &lt; -1.68965 0.73298 -0.02659 1.10913 1.37633 1.34518<br />
+— &gt; -1.68965 0.73298 -0.02659 1.10913 1.37634 1.34518<br />
+135c135 &lt; -1.71168 0.81521 -0.02652 1.12559 1.36818 1.35464<br />
+— &gt; -1.71165 0.81520 -0.02652 1.12558 1.36816 1.35462</p>
+<pre><code>## checks for tests
 ## DOing the tests
-## Running specific tests for package &#39;abind&#39;
-##   Running &#39;abind.R&#39;
-##   comparing &#39;abind.Rout&#39; to &#39;abind.Rout.save&#39; ... OK
-##   Running &#39;adrop.R&#39;
-##   comparing &#39;adrop.Rout&#39; to &#39;adrop.Rout.save&#39; ... OK
-##   Running &#39;afill.R&#39;
-##   comparing &#39;afill.Rout&#39; to &#39;afill.Rout.save&#39; ...  Running &#39;asub.R&#39;
-##   comparing &#39;asub.Rout&#39; to &#39;asub.Rout.save&#39; ... OK
-##   Running &#39;dnns.R&#39;
-##   comparing &#39;dnns.Rout&#39; to &#39;dnns.Rout.save&#39; ... OK</code></pre>
+## Running specific tests for package &#39;mlmRev&#39;
+##   Running &#39;guImmun.R&#39;
+##   Running &#39;lmerTest.R&#39;
+##   Running &#39;versions.R&#39;</code></pre>
 <pre class="r"><code>print(result)</code></pre>
 <p>[1] 0</p>
 </div>

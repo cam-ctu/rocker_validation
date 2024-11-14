@@ -40,7 +40,7 @@ dir.create(recommended_dir)
 
 Running the installation tests as per the manual
 
-```{r tests, eval=FALSE}
+```{r tests}
 Sys.setenv(LC_COLLATE = "C", LC_TIME="C", LANGUAGE = "en")
 success_basic <- tools::testInstalledBasic("both")
 success_internet <- tools::testInstalledBasic("internet")
