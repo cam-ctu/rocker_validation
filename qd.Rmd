@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE, warning=TRUE, results = "asis", error = TRUE,
 
 ```{r loop}
 source("test_pkg.R")
-pkg_list <- "mlmRev"
+pkg_list <- "mnormt"
 long_hand <- lapply( pkg_list, function(pkg){ knitr::knit_expand("package_validate.Rmd")})
 ```
 
