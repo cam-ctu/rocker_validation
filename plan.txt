@@ -17,3 +17,14 @@ e)  Make it work on github via a workflow. Install rocker version xx, run teh va
 f)  Go to R_validation riskassessment/riskmetric.  Build reports for each package. 
 
 can I push
+
+# Must avoid the PC going into sleep mode. Settings>System>Power>Make my device Sleep after> never
+
+
+Maybe use blogdown  with  build.R option.  You coudl then render individual package and the basic tests, using seperate pages,  and write teh results/datestampe to an R object.  Build an index file that presents an overall table of outputs. Give flexibility to re-run failed scripts.. Maybe use parallel processing...  
+
+Check up is .md the actual output after running R code. Or just another variation on Rmd..
+
+
+
+

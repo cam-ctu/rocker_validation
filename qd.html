@@ -11,7 +11,7 @@
 
 <meta name="author" content="Simon Bond" />
 
-<meta name="date" content="2024-11-14" />
+<meta name="date" content="2024-11-15" />
 
 <title>qd</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">qd</h1>
 <h4 class="author">Simon Bond</h4>
-<h4 class="date">2024-11-14</h4>
+<h4 class="date">2024-11-15</h4>
 
 </div>
 
@@ -360,23 +360,27 @@ display: none;
 <div id="whatever" class="section level1">
 <h1>whatever</h1>
 <pre class="r"><code>source(&quot;test_pkg.R&quot;)
-pkg_list &lt;- &quot;mnormt&quot;
+pkg_list &lt;- &quot;merDeriv&quot;
 long_hand &lt;- lapply( pkg_list, function(pkg){ knitr::knit_expand(&quot;package_validate.Rmd&quot;)})</code></pre>
-<div id="mnormt" class="section level2">
-<h2>mnormt</h2>
-<pre class="r"><code>dl &lt;- download.packages(&quot;mnormt&quot;, destdir=&quot;package&quot;,type=&quot;source&quot;,
+<div id="merderiv" class="section level2">
+<h2>merDeriv</h2>
+<pre class="r"><code>dl &lt;- download.packages(&quot;merDeriv&quot;, destdir=&quot;package&quot;,type=&quot;source&quot;,
                         method=&quot;wget&quot;)# wget was what solved this.. was getting binary versions
 
 #unzip the tar.gz file
 # 
-unlink(&quot;package/mnormt&quot;)
+unlink(&quot;package/merDeriv&quot;)
 untar(dl[,2], exdir = &quot;package&quot;, restore_times=FALSE)
 # modify the testInstalledpackages to use the /test fold from within pack.
-result &lt;- test_pkg(&quot;mnormt&quot;, outDir=&quot;package/mnormt&quot;, test_path=&quot;tests&quot;,
+result &lt;- test_pkg(&quot;merDeriv&quot;, outDir=&quot;package/merDeriv&quot;, test_path=&quot;tests&quot;,
                    types=c(&quot;examples&quot;,&quot;tests&quot;)
                    )</code></pre>
-<pre><code>## Testing examples for package &#39;mnormt&#39;</code></pre>
-<pre><code>## checks for tests</code></pre>
+<pre><code>## Testing examples for package &#39;merDeriv&#39;</code></pre>
+<pre><code>##   comparing &#39;merDeriv-Ex.Rout&#39; to &#39;merDeriv-Ex.Rout.prev&#39; ... OK
+## checks for tests
+## DOing the tests
+## Running specific tests for package &#39;merDeriv&#39;
+##   Running &#39;tinytest.R&#39;</code></pre>
 <pre class="r"><code>print(result)</code></pre>
 <p>[1] 0</p>
 </div>
