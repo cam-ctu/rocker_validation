@@ -7,6 +7,8 @@ jobs:
     container:
       image: shug0131/cctu
     steps: 
+      - name: Check out the repo
+        uses: actions/checkout@latest
       - name: Rocker script
         run: Rscript -e 'knitr::knit("validation.Rmd")'
       - name: Commit results
