@@ -13,8 +13,8 @@ jobs:
         run: Rscript -e 'knitr::knit("validation.Rmd")'
       - name: Commit results
         run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
+          git config  user.email "actions@github.com"
+          git config  user.name "GitHub Actions"
           git add *
           git commit -am 'Data updated' || echo "No changes to commit"
           git push origin master || echo "No changes to commit"
