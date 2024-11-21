@@ -2,13 +2,14 @@ name: Rocker UAT
 run-name: Rocker UAT
 on: workflow_dispatch
 jobs:
-    validate:
-        name: Rocker image
-        runs-on: ubuntu-latest
-        container:
-            image: shug0131/cctu
+  validate:
+    runs-on: ubuntu-latest
+    container:
+      image: shug0131/cctu
+    steps: 
+      - name: Rocker script
         run: Rscript -e 'knit::knit("validation.Rmd")'
-    name: Commit results
+      - name: Commit results
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
